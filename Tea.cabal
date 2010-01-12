@@ -1,0 +1,30 @@
+name:                TeaHS
+version:             0.2
+synopsis:            TeaHS Game Creation Library
+description:         A simple library for use creating 2D games, inspired by the Ruby library Tea.
+category:            Games
+license:             BSD3
+license-file:        LICENSE
+homepage:            http://liamoc.net/static/TeaHS
+author:              Liam O'Connor-Davis
+maintainer:          liamoc@cse.unsw.edu.au
+build-type:          Simple
+cabal-version:       >=1.2
+Library
+  exposed-modules:     Tea
+                       Tea.Bitmap
+                       Tea.Clipping
+                       Tea.ImageSaving
+                       Tea.Grabbing
+                       Tea.Font
+                       Tea.Event
+                       Tea.Monad
+                       Tea.Types
+                       Tea.Sound
+                       Tea.Primitive
+                       Tea.BitmapConstructorsInternal
+                       Tea.Blitting
+                       Tea.Screen
+                       Tea.Size
+  
+  build-depends:       base<5, SDL>=0.5.9, Sprig>=0.1, SDL-image, SDL-mixer,SFont>=0.1, array>=0.2, mtl>=1.1, containers>=0.2

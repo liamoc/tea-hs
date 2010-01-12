@@ -1,3 +1,6 @@
 test/*
 Pong.hs
+*.hi
+dist/*
+*.o
 .*.sw?

@@ -10,9 +10,11 @@ module Tea
    , module Tea.Grabbing
    , module Tea.Bitmap
    , module Tea.ImageSaving
+   , module Tea.Font
    ) where
 
 import Tea.Monad
+import Tea.Font
 import Tea.Types
 import Tea.Size
 import Tea.Sound
