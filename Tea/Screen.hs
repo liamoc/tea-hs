@@ -9,7 +9,7 @@ import Tea.Grabbing
 import Tea.Monad
 import qualified Graphics.UI.SDL as SDL
 import Control.Monad.Trans
- 
+
 instance Blitting Screen where
    blitting_buffer = screenBuffer
 

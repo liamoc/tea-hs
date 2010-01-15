@@ -1,10 +1,11 @@
+{-# LANGUAGE NoMonomorphismRestriction #-}
 module Tea.Event ((+>), eventHandler) where
 import Data.Monoid
 import qualified Graphics.UI.SDL as SDL
 import Tea.Types
 import Data.Ix
 
-instance Monoid Event where
+instance Monoid (Event s) where
   mappend (Event a1 a2 a3 a4 a5 a7 a8 a9 a10 a11 a12 a13) (Event b1 b2 b3 b4 b5 b7 b8 b9 b10 b11 b12 b13) = Event {
     keyDown        = \key mods -> (a1 key mods) >> (b1 key mods),
     keyUp          = \key mods -> (a2 key mods) >> (b2 key mods),
@@ -20,26 +21,26 @@ instance Monoid Event where
     restored       = a13 >> b13
   }
   mempty = Event {
-    keyDown           = \key mods -> z,
-    keyUp             = \key mods -> z,
-    mouseDown         = \x b -> z,
-    mouseUp           = \x b -> z,
-    mouseMove         = \x b -> z,
-    mouseGained       = z,
-    mouseLost         = z,
-    keyboardGained    = z,
-    keyboardLost      = z,
-    exit              = z,
-    minimized         = z,
-    restored          = z
+    keyDown           = \key mods -> return (),
+    keyUp             = \key mods -> return (),
+    mouseDown         = \x b -> return (),
+    mouseUp           = \x b -> return (),
+    mouseMove         = \x b -> return (),
+    mouseGained       = return (),
+    mouseLost         = return (),
+    keyboardGained    = return (),
+    keyboardLost      = return (),
+    exit              = return (),
+    minimized         = return (),
+    restored          = return () 
   }
 
 z = return ()
 
-(+>) :: Event -> Event -> Event
+(+>) :: Event s -> Event s -> Event s
 (+>) = mappend
 
-eventHandler :: Event
+eventHandler :: Event s
 eventHandler = mempty
 
 

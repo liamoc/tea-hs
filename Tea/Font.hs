@@ -1,5 +1,6 @@
 module Tea.Font
-  ( loadFont
+  ( Font
+  , loadFont
   , wrap
   , drawText
   ) where
@@ -12,7 +13,7 @@ import Data.List
 
 data Font = Font SFont
 
-loadFont :: String -> Tea Font
+loadFont :: String -> Teacup s Font
 loadFont str = do a <- liftIO $ load str
                   b <- liftIO $ initFont a
                   return (Font b)
@@ -43,7 +44,7 @@ wrap (Font font) str w = init $ unlines $ map (\v -> unlines $ reverse $ wrap' v
                           (taken, dropped) = partitionAtWord str amountToTake
                       in wrap' dropped $ taken:accum
 
-drawText :: Blitting a => a -> Font -> String -> (Int, Int) -> Tea ()
+drawText :: Blitting a => a -> Font -> String -> (Int, Int) -> Teacup s ()
 drawText s (Font font) str (x,y) = do mapM (uncurry drawLine) $ zip (lines str) $ map ((+ y) . (*textHeight font)) [1..]; return ()
      where
         drawLine str y = liftIO $ write (blitting_buffer s) font (x,y) str

@@ -1,4 +1,7 @@
-module Tea.Bitmap where
+module Tea.Bitmap
+  ( loadBitmap
+  , blankBitmap
+  ) where
 import Tea.BitmapConstructorsInternal
 import Tea.Blitting
 import Tea.Clipping
@@ -12,15 +15,15 @@ import qualified Graphics.UI.SDL as SDL
 import qualified Graphics.UI.SDL.Image as SDLI
 import Control.Monad.Trans
 
-fromImage :: String -> Tea Bitmap
-fromImage s = liftIO $ do
+loadBitmap :: String -> Teacup s Bitmap
+loadBitmap s = liftIO $ do
               buf <- SDLI.load s
               buf' <- SDL.displayFormatAlpha buf
               return $ Bitmap { buffer = buf' }              
  
 
-blank :: Int -> Int -> Color -> Tea Bitmap
-blank w h c = do
+blankBitmap :: Int -> Int -> Color -> Teacup s Bitmap
+blankBitmap w h c = do
               buf <- liftIO $ _blank w h c
               return (Bitmap buf)
  

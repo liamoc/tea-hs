@@ -13,14 +13,14 @@ import Tea.Types
 import Control.Monad.Trans
 
 class Blitting v where
-   blitBlend :: Blitting s => v -> s -> BlendMode -> (Int, Int) -> Tea Bool
+   blitBlend :: Blitting s => v -> s -> BlendMode -> (Int, Int) -> Teacup s Bool
    blitBlend d s b (x, y) = do
                       liftIO $ SPG.pushBlend(blendModeToSPG(b))
                       ret <- blit d s (x,y)                      
                       liftIO $ SPG.popBlend
                       return ret
 
-   blit :: Blitting s => v -> s -> (Int, Int) -> Tea Bool
+   blit :: Blitting s => v -> s -> (Int, Int) -> Teacup s Bool
    blit d s (x, y) = liftIO $ SPG.blit src src_rect dst dst_rect
                 where src_rect = (Just (SDL.Rect 0 0 src_w src_h))
                       dst_rect = (Just (SDL.Rect x y src_w src_h))
