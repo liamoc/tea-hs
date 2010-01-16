@@ -15,14 +15,14 @@ import qualified Graphics.UI.SDL as SDL
 import qualified Graphics.UI.SDL.Image as SDLI
 import Control.Monad.Trans
 
-loadBitmap :: String -> Teacup s Bitmap
+loadBitmap :: String -> Tea s Bitmap
 loadBitmap s = liftIO $ do
               buf <- SDLI.load s
               buf' <- SDL.displayFormatAlpha buf
               return $ Bitmap { buffer = buf' }              
  
 
-blankBitmap :: Int -> Int -> Color -> Teacup s Bitmap
+blankBitmap :: Int -> Int -> Color -> Tea s Bitmap
 blankBitmap w h c = do
               buf <- liftIO $ _blank w h c
               return (Bitmap buf)

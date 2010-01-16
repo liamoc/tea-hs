@@ -8,7 +8,7 @@ module Tea
    , EventQuery (..)
    , Screen 
    , Bitmap 
-   , Tea 
+   , Tea  
    , module Tea.Monad
    , module Tea.Sound
    , module Tea.Bitmap

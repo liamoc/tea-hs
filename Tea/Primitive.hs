@@ -67,7 +67,7 @@ pixelToColor s p = SDL.getRGBA p (SDL.surfaceGetPixelFormat s) >>= \(r,g,b,a) ->
 class Primitive v where
 
    primitive_buffer :: v -> SDL.Surface
-   clear :: v -> Teacup s Bool
+   clear :: v -> Tea s Bool
    clear x = liftIO $ 
              SDL.mapRGBA (SDL.surfaceGetPixelFormat surf) 0 0 0 0 >>= 
              SDL.fillRect surf (Just (SDL.Rect 0 0 
@@ -75,36 +75,36 @@ class Primitive v where
                                           (SDL.surfaceGetHeight surf)))
              where surf = (primitive_buffer x) 
 
-   getPixel :: v -> (Int, Int) -> Teacup s Color 
+   getPixel :: v -> (Int, Int) -> Tea s Color 
    getPixel s (x, y) = liftIO $ SPG.getPixel (primitive_buffer s) x y >>= pixelToColor (primitive_buffer s)
 
 
-   setPixel :: v -> (Int, Int) -> Color -> Teacup s ()
+   setPixel :: v -> (Int, Int) -> Color -> Tea s ()
    setPixel s (x, y) color = liftIO $ SPG.pixel surf x y =<< (colorToPixel surf color)
                         where surf = (primitive_buffer s)
 
-   rect :: v -> (Int, Int) -> Int -> Int -> Color -> PrimitiveOptions -> Teacup s ()
+   rect :: v -> (Int, Int) -> Int -> Int -> Color -> PrimitiveOptions -> Tea s ()
    rect s (x,y) w h c opts = liftIO $ withOptions opts $ rect' (primitive_buffer s) x y (x+w) (y+h) c
 
-   roundedRect :: v -> (Int, Int) -> Int -> Int -> Float -> Color -> PrimitiveOptions -> Teacup s ()
+   roundedRect :: v -> (Int, Int) -> Int -> Int -> Float -> Color -> PrimitiveOptions -> Tea s ()
    roundedRect s (x, y) w h r c opts = liftIO $ withOptions opts $ roundedRect' (primitive_buffer s) x y (x+w) (y+h) r c
 
-   line :: v -> (Int, Int) -> (Int, Int) -> Color -> PrimitiveOptions -> Teacup s ()
+   line :: v -> (Int, Int) -> (Int, Int) -> Color -> PrimitiveOptions -> Tea s ()
    line s (x1, y1) (x2, y2) c opts = liftIO $ withOptions opts $ line' (primitive_buffer s) x1 y1 x2 y2 c
 
-   fadeLine :: v -> (Int, Int) -> (Int, Int) -> Color -> Color -> PrimitiveOptions -> Teacup s ()
+   fadeLine :: v -> (Int, Int) -> (Int, Int) -> Color -> Color -> PrimitiveOptions -> Tea s ()
    fadeLine s (x1, y1) (x2, y2) c1 c2 opts = liftIO $ withOptions opts $ fadeLine' (primitive_buffer s) x1 y1 x2 y2 c1 c2
 
-   bezier :: v -> (Int, Int) -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Int -> Color -> PrimitiveOptions -> Tea()
+   bezier :: v -> (Int, Int) -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Int -> Color -> PrimitiveOptions -> Tea s ()
    bezier s (x1, y1) (x2, y2) (x3, y3) (x4, y4) q c opts = liftIO $ withOptions opts $ bezier' (primitive_buffer s) x1 y1 x2 y2 x3 y3 x4 y4 q c
 
-   circle :: v -> (Int, Int) -> Float -> Color -> PrimitiveOptions -> Teacup s ()
+   circle :: v -> (Int, Int) -> Float -> Color -> PrimitiveOptions -> Tea s ()
    circle s (x, y) r c opts = liftIO $ withOptions opts $ circle' (primitive_buffer s) x y r c
    
-   arc :: v -> (Int, Int) -> Float -> Float -> Float -> Color -> PrimitiveOptions -> Teacup s ()
+   arc :: v -> (Int, Int) -> Float -> Float -> Float -> Color -> PrimitiveOptions -> Tea s ()
    arc s (x, y) r a1 a2 c opts = liftIO $ withOptions opts $ arc' (primitive_buffer s) x y r a1 a2 c
 
-   ellipse :: v -> (Int, Int) -> Float -> Float -> Color -> PrimitiveOptions -> Teacup s ()
+   ellipse :: v -> (Int, Int) -> Float -> Float -> Color -> PrimitiveOptions -> Tea s ()
    ellipse s (x, y) rx ry c opts = liftIO $ withOptions opts $ ellipse' (primitive_buffer s) x y rx ry c
 
 

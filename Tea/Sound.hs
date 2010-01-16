@@ -32,58 +32,58 @@ maxVolume = 128
 noChannel :: Mixer.Channel
 noChannel = -1
 
-loadSound :: FilePath -> Teacup s Sound
+loadSound :: FilePath -> Tea s Sound
 loadSound f = liftIO (Mixer.loadWAV f) >>= return . Sound
 
-play :: Sound -> Teacup s ()
+play :: Sound -> Tea s ()
 play snd = playLoop snd 0
 
-playLoop :: Sound -> Int -> Teacup s ()
+playLoop :: Sound -> Int -> Tea s ()
 playLoop s@(Sound chun) loops = do stop s
                                    chan <- liftIO $ Mixer.playChannel (-1) chun loops
-                                   modify $ \s@TS{_channels = c} -> s { _channels = insert ((read $ show chun) :: Int) chan c } 
+                                   modifyT $ \s@TS{_channels = c} -> s { _channels = insert ((read $ show chun) :: Int) chan c } 
 
 withChannel = withChannelRet ()
 
 withChannelRet ret chun f = let key = (read $ show chun) :: Int 
-                            in do c <- fmap _channels get 
+                            in do c <- fmap _channels getT 
                                   case Map.lookup key c of
                                      Just channel -> f channel
                                      Nothing      -> return ret
 
-pause :: Sound -> Teacup s ()                      
+pause :: Sound -> Tea s ()                      
 pause (Sound chun) = withChannel chun $ \chan -> liftIO $ Mixer.pause chan
 
-resume :: Sound -> Teacup s ()
+resume :: Sound -> Tea s ()
 resume (Sound chun) = withChannel chun $ \chan -> liftIO $ Mixer.resume chan
 
-stop :: Sound -> Teacup s ()
+stop :: Sound -> Tea s ()
 stop (Sound chun) = withChannel chun $ \chan -> liftIO $ Mixer.haltChannel chan
 
-setVolume :: Sound -> Int -> Teacup s ()
+setVolume :: Sound -> Int -> Tea s ()
 setVolume (Sound chun) vol = withChannel chun $ \chan -> liftIO $ do Mixer.volume chan vol
                                                                      return ()
-getVolume :: Sound -> Teacup s Int
+getVolume :: Sound -> Tea s Int
 getVolume (Sound chun) = withChannelRet (-1) chun $ \chan -> liftIO $ Mixer.volume chan (-1)
 
-isPlaying :: Sound -> Teacup s Bool
+isPlaying :: Sound -> Tea s Bool
 isPlaying (Sound chun) = withChannelRet False chun $ \chan -> liftIO $ Mixer.isChannelPlaying chan
 
-isPaused :: Sound -> Teacup s Bool
+isPaused :: Sound -> Tea s Bool
 isPaused (Sound chun) = withChannelRet False chun $ \chan -> liftIO $ Mixer.isChannelPaused chan
 
-pauseAll :: Teacup s ()
+pauseAll :: Tea s ()
 pauseAll = liftIO $ Mixer.pause noChannel
 
-resumeAll :: Teacup s ()
+resumeAll :: Tea s ()
 resumeAll = liftIO $ Mixer.resume noChannel
 
-stopAll :: Teacup s ()
+stopAll :: Tea s ()
 stopAll = liftIO $ Mixer.haltChannel noChannel
 
-setMasterVolume :: Int -> Teacup s ()
+setMasterVolume :: Int -> Tea s ()
 setMasterVolume v = liftIO $ Mixer.volume noChannel v >> return ()
 
-getMasterVolume :: Teacup s Int
+getMasterVolume :: Tea s Int
 getMasterVolume = liftIO $ Mixer.volume noChannel (-1)
 

@@ -10,7 +10,7 @@ import Tea.Blitting
 import Tea.Monad
 import Control.Monad.Trans
 class Grabbing v where
-   grab :: Blitting s => v -> (Int, Int) -> Int -> Int -> s -> Teacup s ()
+   grab :: Blitting s => v -> (Int, Int) -> Int -> Int -> s -> Tea s ()
    grab s (x, y) w h ret = do
                            liftIO $ SPG.pushBlend (SPG.CopySrcAlpha)
                            liftIO $ SPG.blit src (Just $ SDL.Rect x y w h) (blitting_buffer ret) (Just $ SDL.Rect 0 0 w h)

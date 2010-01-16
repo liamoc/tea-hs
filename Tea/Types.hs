@@ -9,14 +9,13 @@ module Tea.Types
    , Mod (..)
    , Button (..)
    , Event (..)
-   , Tea (..)
    , TeaState (..)
    , EventState (..)
    , sdlMod
    , sdlButton
    , sdlKey
    , EventQuery (..)    
-   , Teacup (..)
+   , Tea (..)
    , getT
    , putT
    , modifyT
@@ -34,25 +33,16 @@ data Bitmap = Bitmap { buffer :: SDL.Surface }
 data Screen = Screen { screenBuffer :: SDL.Surface }
 
 data TeaState = TS { _screen :: Screen, _eventState :: EventState, _fpsCap :: Int, _lastUpdate :: Int, _channels :: M.Map Int Int}
-newtype Teacup s v = Teacup { extractTea :: StateT s Tea v }
-newtype Tea v = Tea { extract :: StateT TeaState IO v }
+newtype Tea s v = Tea { extractTea :: StateT s (StateT TeaState IO) v }
 
-instance Monad Tea where
-   return f      = Tea $ return f
-   (Tea a) >>= b = Tea $ a >>= extract . b
+instance Monad (Tea s) where
+   return f         = Tea $ return f
+   (Tea a) >>= b = Tea $ a >>= extractTea . b
 
-instance Monad (Teacup s) where
-   return f         = Teacup $ return f
-   (Teacup a) >>= b = Teacup $ a >>= extractTea . b
-
-instance MonadState TeaState Tea where
-   get = Tea $ get
-   put = Tea . put
- 
-getT :: Teacup s TeaState
-getT = Teacup $ lift $ get
-putT = Teacup . lift . put
-modifyT = Teacup . lift . modify
+getT :: Tea s TeaState
+getT = Tea $ lift $ get
+putT = Tea . lift . put
+modifyT = Tea . lift . modify
 
 data Color = Color { red :: Int, green :: Int, blue :: Int, alpha :: Int}
            deriving (Show, Eq)
@@ -86,18 +76,18 @@ blendModeToSPG  CombineAlphaOnly  = SPG.CombineAlphaOnly
 
 data ScrollDirection = Up | Down deriving (Show, Eq)
 
-data Event s = Event { keyDown        :: KeyCode -> [Mod] -> Teacup s ()
-                     , keyUp          :: KeyCode -> [Mod] -> Teacup s ()
-                     , mouseDown      :: Button -> (Int, Int) -> Teacup s ()
-                     , mouseUp        :: Button -> (Int, Int) -> Teacup s ()
-                     , mouseMove      :: (Int, Int) -> [Button] -> Teacup s ()
-                     , mouseGained    :: Teacup s ()
-                     , mouseLost      :: Teacup s ()
-                     , keyboardGained :: Teacup s ()
-                     , keyboardLost   :: Teacup s ()
-                     , exit           :: Teacup s ()
-                     , minimized      :: Teacup s ()
-                     , restored       :: Teacup s ()
+data Event s = Event { keyDown        :: KeyCode -> [Mod] -> Tea s ()
+                     , keyUp          :: KeyCode -> [Mod] -> Tea s ()
+                     , mouseDown      :: Button -> (Int, Int) -> Tea s ()
+                     , mouseUp        :: Button -> (Int, Int) -> Tea s ()
+                     , mouseMove      :: (Int, Int) -> [Button] -> Tea s ()
+                     , mouseGained    :: Tea s ()
+                     , mouseLost      :: Tea s ()
+                     , keyboardGained :: Tea s ()
+                     , keyboardLost   :: Tea s ()
+                     , exit           :: Tea s ()
+                     , minimized      :: Tea s ()
+                     , restored       :: Tea s ()
                      }                      
 
 
