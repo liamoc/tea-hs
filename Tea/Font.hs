@@ -44,8 +44,9 @@ wrap (Font font) str w = init $ unlines $ map (\v -> unlines $ reverse $ wrap' v
                           (taken, dropped) = partitionAtWord str amountToTake
                       in wrap' dropped $ taken:accum
 
-drawText :: Blitting a => a -> Font -> String -> (Int, Int) -> Tea s ()
-drawText s (Font font) str (x,y) = do mapM (uncurry drawLine) $ zip (lines str) $ map ((+ y) . (*textHeight font)) [1..]; return ()
+drawText :: Blitting a => a -> (Int, Int) -> Font -> String -> Tea s ()
+drawText s (x,y) (Font font) str = do mapM (uncurry drawLine) $ zip (lines str) $ map ((+ y) . (*textHeight font)) [1..]; return ()
      where
         drawLine str y = liftIO $ write (blitting_buffer s) font (x,y) str
 
+drawTextM m c f s = m >>= \m' -> drawText m' c f s

@@ -1,15 +1,15 @@
 {-# LANGUAGE NoMonomorphismRestriction #-}
-module Tea.Primitive 
+module Tea.Primitive
    ( PrimitiveOptions (..)
    , defaults
    , Primitive (..)
    , rectM
-   , setPixelM 
-   , getPixelM 
+   , setPixelM
+   , getPixelM
    , clearM
    , roundedRectM
    , lineM
-   , fadeLineM 
+   , fadeLineM
    , bezierM
    , circleM
    , arcM
@@ -25,29 +25,29 @@ import Foreign
 import Control.Monad.Trans
 
 data PrimitiveOptions = PrimitiveOptions { mix :: BlendMode
-                                         , antialias :: Bool 
-                                         , filled    :: Bool 
+                                         , antialias :: Bool
+                                         , filled    :: Bool
                                          , thickness :: Int
                                          } deriving (Show, Eq)
 
-defaults = PrimitiveOptions { mix = DestAlpha, antialias = True, filled = False, thickness = 1 }                    
+defaults = PrimitiveOptions { mix = DestAlpha, antialias = True, filled = False, thickness = 1 }
 
 colorToPixel surf (Color r g b a) = SDL.mapRGBA (SDL.surfaceGetPixelFormat surf) (fromIntegral r) (fromIntegral g) (fromIntegral b) (fromIntegral a)
 
 withColor s c f = colorToPixel s c >>= flip f (fromIntegral $ alpha c)
 
-alpha' = fromIntegral . alpha 
-line' s x1 y1 x2 y2 c _                 = withColor s c $ SPG.lineBlend s x1 y1 x2 y2 
-bezier' s x1 y1 x2 y2 x3 y3 x4 y4 q c _ = withColor s c $ SPG.bezierBlend s x1 y1 x2 y2 x3 y3 x4 y4 (fromIntegral q) 
+alpha' = fromIntegral . alpha
+line' s x1 y1 x2 y2 c _                 = withColor s c $ SPG.lineBlend s x1 y1 x2 y2
+bezier' s x1 y1 x2 y2 x3 y3 x4 y4 q c _ = withColor s c $ SPG.bezierBlend s x1 y1 x2 y2 x3 y3 x4 y4 (fromIntegral q)
 rect' s x1 y1 x2 y2 c True              = withColor s c $ SPG.rectFilledBlend s x1 y1 x2 y2
-rect' s x1 y1 x2 y2 c False             = withColor s c $ SPG.rectBlend s x1 y1 x2 y2 
+rect' s x1 y1 x2 y2 c False             = withColor s c $ SPG.rectBlend s x1 y1 x2 y2
 roundedRect' s x1 y1 x2 y2 r c True     = withColor s c $ SPG.rectRoundFilledBlend s x1 y1 x2 y2 r
-roundedRect' s x1 y1 x2 y2 r c False    = withColor s c $ SPG.rectRoundBlend s x1 y1 x2 y2 r 
-circle' s x y r c True                  = withColor s c $ SPG.circleFilledBlend s x y r 
+roundedRect' s x1 y1 x2 y2 r c False    = withColor s c $ SPG.rectRoundBlend s x1 y1 x2 y2 r
+circle' s x y r c True                  = withColor s c $ SPG.circleFilledBlend s x y r
 circle' s x y r c False                 = withColor s c $ SPG.circleBlend s x y r
-arc' s x y r a1 a2 c True               = withColor s c $ SPG.arcFilledBlend s x y r a1 a2 
-arc' s x y r a1 a2 c False              = withColor s c $ SPG.arcBlend s x y r a1 a2 
-ellipse' s x y rx ry c True             = withColor s c $ SPG.ellipseFilledBlend s x y rx ry 
+arc' s x y r a1 a2 c True               = withColor s c $ SPG.arcFilledBlend s x y r a1 a2
+arc' s x y r a1 a2 c False              = withColor s c $ SPG.arcBlend s x y r a1 a2
+ellipse' s x y rx ry c True             = withColor s c $ SPG.ellipseFilledBlend s x y rx ry
 ellipse' s x y rx ry c False            = withColor s c $ SPG.ellipseBlend s x y rx ry
 fadeLine' s x1 y1 x2 y2 c c2 _          = do c2' <- colorToPixel s c2; c1' <- colorToPixel s c; SPG.lineFadeBlend s x1 y1 x2 y2 c1' (alpha' c) c2' $ alpha' c2
 
@@ -68,14 +68,14 @@ class Primitive v where
 
    primitive_buffer :: v -> SDL.Surface
    clear :: v -> Tea s Bool
-   clear x = liftIO $ 
-             SDL.mapRGBA (SDL.surfaceGetPixelFormat surf) 0 0 0 0 >>= 
-             SDL.fillRect surf (Just (SDL.Rect 0 0 
-                                          (SDL.surfaceGetWidth  surf) 
+   clear x = liftIO $
+             SDL.mapRGBA (SDL.surfaceGetPixelFormat surf) 0 0 0 0 >>=
+             SDL.fillRect surf (Just (SDL.Rect 0 0
+                                          (SDL.surfaceGetWidth  surf)
                                           (SDL.surfaceGetHeight surf)))
-             where surf = (primitive_buffer x) 
+             where surf = (primitive_buffer x)
 
-   getPixel :: v -> (Int, Int) -> Tea s Color 
+   getPixel :: v -> (Int, Int) -> Tea s Color
    getPixel s (x, y) = liftIO $ SPG.getPixel (primitive_buffer s) x y >>= pixelToColor (primitive_buffer s)
 
 
@@ -100,7 +100,7 @@ class Primitive v where
 
    circle :: v -> (Int, Int) -> Float -> Color -> PrimitiveOptions -> Tea s ()
    circle s (x, y) r c opts = liftIO $ withOptions opts $ circle' (primitive_buffer s) x y r c
-   
+
    arc :: v -> (Int, Int) -> Float -> Float -> Float -> Color -> PrimitiveOptions -> Tea s ()
    arc s (x, y) r a1 a2 c opts = liftIO $ withOptions opts $ arc' (primitive_buffer s) x y r a1 a2 c
 
@@ -108,14 +108,15 @@ class Primitive v where
    ellipse s (x, y) rx ry c opts = liftIO $ withOptions opts $ ellipse' (primitive_buffer s) x y rx ry c
 
 
-rectM        = (>>= rect) 
-setPixelM    = (>>= setPixel)
-getPixelM    = (>>= getPixel)
-clearM       = (>>= clear)
-roundedRectM = (>>= roundedRect)
-lineM        = (>>= line)
-fadeLineM    = (>>= fadeLine)
-bezierM      = (>>= bezier) 
-circleM      = (>>= circle) 
-arcM         = (>>= arc) 
-ellipseM     = (>>= ellipse) 
+clearM = (>>= clear)
+-- s/\(.*\)M m\(.*\)/\0 = m >>= \\m' -> \1 m' \2/g
+rectM m c w h l o = m >>= \m' -> rect m'  c w h l o
+setPixelM m c l = m >>= \m' -> setPixel m'  c l
+getPixelM m c = m >>= \m' -> getPixel m'  c
+roundedRectM m c w h r l o = m >>= \m' -> roundedRect m'  c w h r l o
+lineM m c1 c2 l o = m >>= \m' -> line m'  c1 c2 l o
+fadeLineM m c1 c2 l1 l2 o = m >>= \m' -> fadeLine m'  c1 c2 l1 l2 o
+bezierM m c1 c2 c3 c4 q l o = m >>= \m' -> bezier m'  c1 c2 c3 c4 q l o
+circleM m c r l o = m >>= \m' -> circle m'  c r l o
+arcM m c r s e l o = m >>= \m' -> arc m'  c r s e l o
+ellipseM m c rx ry l o = m >>= \m' -> ellipse m'  c rx ry l o

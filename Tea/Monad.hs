@@ -1,5 +1,5 @@
 {-# LANGUAGE MultiParamTypeClasses, FlexibleInstances #-}
-module Tea.Monad 
+module Tea.Monad
        ( screen
        , update
        , runTea
@@ -58,7 +58,7 @@ getEventQuery (MouseIn c1 c2)      = queryMouseIn c1 c2
 getEventQuery (MouseOutside c1 c2) = not <$> queryMouseIn c1 c2
 getEventQuery (AppVisible)         = queryAppVisible
 getEventQuery (AppInvisible)       = not <$> queryAppVisible
-getEventQuery (AnyMouseDown)       = queryMouseDown 
+getEventQuery (AnyMouseDown)       = queryMouseDown
 getEventQuery (NoMouseDown)        = not <$> queryMouseDown
 getEventQuery (MouseDown button)   = queryMouseButton button
 getEventQuery (MouseUp button)     = not <$> queryMouseButton button
@@ -85,7 +85,7 @@ within (x1,y1) (x2,y2) (x, y) = x > x1 && y > y1 && x < x2 && y < y2
 
 (?) :: EventQuery -> Tea s z -> Tea s ()
 q ? m = do a <- getEventQuery q
-           if a 
+           if a
               then m >> return ()
               else return ()
 
@@ -107,11 +107,11 @@ handleEvents :: Event s -> Tea s ()
 handleEvents e = let e' = eventHandler {
                              keyDown = \code _-> (setEventQuery (KeyDown code) >> setEventQuery AnyKeyDown),
                              keyUp   = \code _-> (setEventQuery (KeyUp   code) >> setEventQuery NoKeyDown)
-                          } +> e 
+                          } +> e
                      this = do
                             event <- liftIO $ SDL.pollEvent
                             buttons <- mouseButtons
-                            case event of 
+                            case event of
                                SDL.GotFocus l            -> foldl (>>) (return ()) $ map gotFocus' l
                                SDL.LostFocus l           -> foldl (>>) (return ()) $ map lostFocus' l
                                SDL.KeyDown ks            -> keyDown e'   (sdlKey (SDL.symKey ks)) (map sdlMod (SDL.symModifiers ks))
@@ -119,7 +119,7 @@ handleEvents e = let e' = eventHandler {
                                SDL.MouseButtonUp x y b   -> mouseUp e'   (sdlButton b) (fromIntegral x, fromIntegral y)
                                SDL.MouseButtonDown x y b -> mouseDown e' (sdlButton b) (fromIntegral x, fromIntegral y)
                                SDL.MouseMotion x y _ _   -> mouseMove e' (fromIntegral x, fromIntegral y) buttons
-                               SDL.Quit                  -> exit e'                               
+                               SDL.Quit                  -> exit e'
                                _                         -> return ()
                             if event /= SDL.NoEvent then this else return ()
                      gotFocus' SDL.MouseFocus = mouseGained e'
@@ -139,12 +139,12 @@ initialEventState = ES { keyCodes    = listArray (minBound :: KeyCode, maxBound 
 runTea :: Int -> Int -> s -> Tea s m -> IO ()
 runTea w h s m = do
                  SDL.init [SDL.InitEverything]
-                 Mixer.openAudio 44100 Mixer.AudioS16Sys 2 1024               
+                 Mixer.openAudio 44100 Mixer.AudioS16Sys 2 1024
                  surf <- SDL.setVideoMode w h bitsPerPixel [SDL.SWSurface]
-                 let initialState = (TS (Screen surf) initialEventState (1000 `div` 60) 0 M.empty) 
---                 ((v,s'), st') <- runStateT (runStateT (extractTea m) s) initialState 
+                 let initialState = (TS (Screen surf) initialEventState (1000 `div` 60) 0 M.empty)
+                 ((v,s'), st') <- runStateT (runStateT (extractTea m) s) initialState
                  Mixer.closeAudio
                  SDL.quit
                  return ()
-            
- 
+
+
