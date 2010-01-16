@@ -1,29 +1,74 @@
 /* CSS File for Tea Website */
+      
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode, table.sourceCode pre { margin: 0; padding: 0; border: 0; vertical-align: baseline; border: none; }
+td.lineNumbers { border-right: 1px solid #AAAAAA; text-align: right; color: #AAAAAA; padding-right: 5px; padding-left: 5px; }
+td.sourceCode { padding-left: 5px; }
+pre.sourceCode { }
+pre.sourceCode span.Normal { }
+pre.sourceCode span.Keyword { color: #007020; font-weight: bold; } 
+pre.sourceCode span.DataType { color: #902000; }
+pre.sourceCode span.DecVal { color: #40a070; }
+pre.sourceCode span.BaseN { color: #40a070; }
+pre.sourceCode span.Float { color: #40a070; }
+pre.sourceCode span.Char { color: #4070a0; }
+pre.sourceCode span.String { color: #4070a0; }
+pre.sourceCode span.Comment { color: #60a0b0; font-style: italic; }
+pre.sourceCode span.Others { color: #007020; }
+pre.sourceCode span.Alert { color: red; font-weight: bold; }
+pre.sourceCode span.Function { color: #06287e; }
+pre.sourceCode span.RegionMarker { }
+pre.sourceCode span.Error { color: red; font-weight: bold; }
 
 body {
-   background:url(../static/left_bg.png) repeat-y #b9e0e0;
    margin: 0px;
-   font-family:sans-serif;
+   font-family:sans-serif; 
+   background: #291d06;
 }
 
 div.header {
-   background: url(../static/top_bg.png) repeat-x;
+   background: url(../static/top_bg.gif) repeat-x;
    height: 241px;
 }
 div.headermain {
-   background: url(../static/main.png) no-repeat;
+   background: url(../static/main.gif) no-repeat;
    width: 530px;
    height: 321px;
 }
-div.content {
-   margin-left:140px;
+div.content {    margin-left:250px;
    position: relative;
-   top: -80px;
+   margin-right:30px;
+   top: -70px;   
 }
-div.title {
-   margin-left:140px; 
-   padding-top: 172px;
-   color: #FFFFFF;
-   font-size:40px;
-   font-family: sans-serif;
+table.sourceCode {
+   background-color: #EFFFEF;
+   width:100%
+   border:1px solid #449944;
+   border-top:1px solid #449944;
+   border-bottom:1px solid #449944;
+   border-left-width:0px;
+   border-right-width:0px;
 }
+
+
+div.sidebar {
+   top:173px;
+   position:absolute;
+   float:left;
+   color: white;
+   font-weight:bold;
+   padding-left:10px;
+   bottom:0px;
+}
+div.rightpart {
+   background:url(../static/right_bg.gif) repeat-y;
+   float:right;
+  /* height:100%;*/
+}   
+div.container {
+  background:url(../static/left_bg.gif) repeat-y #e2fad7;
+  max-width:76em;
+  min-width:15em;
+ /*  
+   height:100%;
+   */
+}   
