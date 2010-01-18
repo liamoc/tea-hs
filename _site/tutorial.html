@@ -1,0 +1,609 @@
+<html>
+<title>TeaHS - Tutorial 1 - Simple animation</title>
+<link rel='stylesheet' href='./css/main.css' />
+<body>
+<div class='container'>
+   
+   
+   
+   
+   
+   <div class='rightpart'>               
+   <img src='./static/corner.gif' /> 
+   </div>                                
+   
+   <div class='header'>
+      <div class='headermain'>&nbsp;</div>
+   </div>
+  <div class='sidebar'> 
+  <p
+>Sidebar!</p
+>              
+  </div>                
+
+      <div class='content'>
+      <div id="simple-animation-tutorial"
+><h2
+  >Simple animation tutorial</h2
+  ><p
+  >Welcome to TeaHS. In this tutorial we will demonstrate a simple example of Tea - an animation of a bouncing ball.</p
+  ><p
+  >As with all these tutorials, this program will be available in a tar.gz file at the end of the document.</p
+  ><p
+  >Firstly, we import Tea, and define a simple main function:</p
+  ><table class="sourceCode"
+  ><tr
+    ><td class="lineNumbers" title="Click to toggle line numbers" onclick="with (this.firstChild.style) { display = (display == '') ? 'none' : '' }"
+      ><pre
+	>1
+2
+3
+4
+</pre
+	></td
+      ><td class="sourceCode"
+      ><pre class="sourceCode haskell"
+	><code
+	  ><span class="Keyword"
+	    >import</span
+	    ><span class="Normal NormalText"
+	    > Tea</span
+	    ><br
+	     /><span class="Function FunctionDefinition"
+	    >main ::</span
+	    ><span class="Normal NormalText"
+	    > </span
+	    ><span class="DataType TypeConstructor"
+	    >IO</span
+	    ><span class="Normal NormalText"
+	    > ()</span
+	    ><br
+	     /><span class="Normal NormalText"
+	    >main = runTea </span
+	    ><span class="DecVal Decimal"
+	    >640</span
+	    ><span class="Normal NormalText"
+	    > </span
+	    ><span class="DecVal Decimal"
+	    >480</span
+	    ><span class="Normal NormalText"
+	    > </span
+	    ><span class="Function"
+	    >undefined</span
+	    ><span class="Normal NormalText"
+	    > $ </span
+	    ><span class="Keyword"
+	    >do</span
+	    ><br
+	     /><span class="Normal NormalText"
+	    >         </span
+	    ><span class="Function"
+	    >return</span
+	    ><span class="Normal NormalText"
+	    > ()</span
+	    ><br
+	     /></code
+	  ></pre
+	></td
+      ></tr
+    ></table
+  ><p
+  >You may have already noticed, but Tea actions do not reside in IO but in a special Tea monad. The only way to execute Tea actions is to use the runTea function. This copointed type structure means that Tea actions can depend on parts of hardware (such as audio and screen output) being initialized, as this is performed before the action inside runTea is executed.</p
+  ><p
+  >runTea's type signature is as follows:</p
+  ><table class="sourceCode"
+  ><tr
+    ><td class="lineNumbers" title="Click to toggle line numbers" onclick="with (this.firstChild.style) { display = (display == '') ? 'none' : '' }"
+      ><pre
+	>1
+</pre
+	></td
+      ><td class="sourceCode"
+      ><pre class="sourceCode haskell"
+	><code
+	  ><span class="Function FunctionDefinition"
+	    >runTea ::</span
+	    ><span class="Normal NormalText"
+	    > </span
+	    ><span class="DataType TypeConstructor"
+	    >Int</span
+	    ><span class="Normal NormalText"
+	    > -&gt; </span
+	    ><span class="DataType TypeConstructor"
+	    >Int</span
+	    ><span class="Normal NormalText"
+	    > -&gt; s -&gt; Tea s a -&gt; </span
+	    ><span class="DataType TypeConstructor"
+	    >IO</span
+	    ><span class="Normal NormalText"
+	    > a</span
+	    ><br
+	     /></code
+	  ></pre
+	></td
+      ></tr
+    ></table
+  ><p
+  >Those that are familiar with the <a href=""
+    >State Monad</a
+    > would notice its similarity to runState, or similar. This is because the Tea monad doubles as a state monad (hence the type parameter). <code>get</code>, <code>put</code> and <code>modify </code> all work as normal. With that in mind, let's define our state for the bouncing ball:</p
+  ><table class="sourceCode"
+  ><tr
+    ><td class="lineNumbers" title="Click to toggle line numbers" onclick="with (this.firstChild.style) { display = (display == '') ? 'none' : '' }"
+      ><pre
+	>1
+2
+3
+4
+5
+</pre
+	></td
+      ><td class="sourceCode"
+      ><pre class="sourceCode haskell"
+	><code
+	  ><span class="Keyword"
+	    >data</span
+	    ><span class="Normal NormalText"
+	    > BallState = Ball { </span
+	    ><span class="Function FunctionDefinition"
+	    >x  ::</span
+	    ><span class="Normal NormalText"
+	    > </span
+	    ><span class="DataType TypeConstructor"
+	    >Int</span
+	    ><br
+	     /><span class="Normal NormalText"
+	    >                      , </span
+	    ><span class="Function FunctionDefinition"
+	    >y  ::</span
+	    ><span class="Normal NormalText"
+	    > </span
+	    ><span class="DataType TypeConstructor"
+	    >Int</span
+	    ><br
+	     /><span class="Normal NormalText"
+	    >                      , </span
+	    ><span class="Function FunctionDefinition"
+	    >dx ::</span
+	    ><span class="Normal NormalText"
+	    > </span
+	    ><span class="DataType TypeConstructor"
+	    >Int</span
+	    ><br
+	     /><span class="Normal NormalText"
+	    >                      , </span
+	    ><span class="Function FunctionDefinition"
+	    >dy ::</span
+	    ><span class="Normal NormalText"
+	    > </span
+	    ><span class="DataType TypeConstructor"
+	    >Int</span
+	    ><br
+	     /><span class="Normal NormalText"
+	    >                      }</span
+	    ><br
+	     /></code
+	  ></pre
+	></td
+      ></tr
+    ></table
+  ><p
+  >Next, let's define the 'main loop' for the animation, by redefining our main function as follows:</p
+  ><table class="sourceCode"
+  ><tr
+    ><td class="lineNumbers" title="Click to toggle line numbers" onclick="with (this.firstChild.style) { display = (display == '') ? 'none' : '' }"
+      ><pre
+	>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+</pre
+	></td
+      ><td class="sourceCode"
+      ><pre class="sourceCode haskell"
+	><code
+	  ><span class="Keyword"
+	    >import</span
+	    ><span class="Normal NormalText"
+	    > Tea</span
+	    ><br
+	     /><span class="Keyword"
+	    >import</span
+	    ><span class="Normal NormalText"
+	    > </span
+	    ><span class="Normal ModuleName"
+	    >Control.Monad.State</span
+	    ><br
+	     /><span class="Keyword"
+	    >import</span
+	    ><span class="Normal NormalText"
+	    > </span
+	    ><span class="Normal ModuleName"
+	    >Control.Monad</span
+	    ><br
+	     /><br
+	     /><span class="Normal NormalText"
+	    >screenWidth = </span
+	    ><span class="DecVal Decimal"
+	    >640</span
+	    ><br
+	     /><span class="Normal NormalText"
+	    >screenHeight = </span
+	    ><span class="DecVal Decimal"
+	    >480</span
+	    ><br
+	     /><br
+	     /><span class="Function FunctionDefinition"
+	    >main ::</span
+	    ><span class="Normal NormalText"
+	    > </span
+	    ><span class="DataType TypeConstructor"
+	    >IO</span
+	    ><span class="Normal NormalText"
+	    > ()</span
+	    ><br
+	     /><span class="Comment"
+	    >-- we use a fixed point combinator to achieve the loop. </span
+	    ><br
+	     /><span class="Comment"
+	    >-- This could be done with explicit recursion also.</span
+	    ><br
+	     /><span class="Normal NormalText"
+	    >main = runTea screenWidth screenHeight (Ball </span
+	    ><span class="DecVal Decimal"
+	    >320</span
+	    ><span class="Normal NormalText"
+	    > </span
+	    ><span class="DecVal Decimal"
+	    >240</span
+	    ><span class="Normal NormalText"
+	    > </span
+	    ><span class="DecVal Decimal"
+	    >1</span
+	    ><span class="Normal NormalText"
+	    > </span
+	    ><span class="DecVal Decimal"
+	    >1</span
+	    ><span class="Normal NormalText"
+	    >) $ fix $ \loop -&gt; </span
+	    ><span class="Keyword"
+	    >do</span
+	    ><span class="Normal NormalText"
+	    > </span
+	    ><br
+	     /><span class="Normal NormalText"
+	    >           modify $ \s -&gt; tick s </span
+	    ><span class="Comment"
+	    >-- update the ball state</span
+	    ><br
+	     /><span class="Normal NormalText"
+	    >           get &gt;&gt;= draw          </span
+	    ><span class="Comment"
+	    >-- draw the ball</span
+	    ><br
+	     /><span class="Normal NormalText"
+	    >           loop                  </span
+	    ><span class="Comment"
+	    >-- and around we go again</span
+	    ><br
+	     /></code
+	  ></pre
+	></td
+      ></tr
+    ></table
+  ><p
+  >Now we pass an initial <code>BallState </code> to the <code>runTea </code> function, changing the type of the monad to <code>Tea BallState () </code>. The final piece of the puzzle is to write the as-yet unwritten <code>tick</code> and <code>draw </code> actions.</p
+  ><p
+  >The <code>tick </code> action is responsible for updating the state. The first tick case to handle is the case where the ball bounces against the top or bottom of the screen.</p
+  ><table class="sourceCode"
+  ><tr
+    ><td class="lineNumbers" title="Click to toggle line numbers" onclick="with (this.firstChild.style) { display = (display == '') ? 'none' : '' }"
+      ><pre
+	>1
+2
+</pre
+	></td
+      ><td class="sourceCode"
+      ><pre class="sourceCode haskell"
+	><code
+	  ><span class="Normal NormalText"
+	    >tick (Ball x y dx dy) | collides_y = Ball x y dx (-dy) </span
+	    ><br
+	     /><span class="Normal NormalText"
+	    >    </span
+	    ><span class="Keyword"
+	    >where</span
+	    ><span class="Normal NormalText"
+	    > collides_y = y &gt; screenHeight || y &lt; </span
+	    ><span class="DecVal Decimal"
+	    >0</span
+	    ><br
+	     /></code
+	  ></pre
+	></td
+      ></tr
+    ></table
+  ><p
+  >Now we extend this to cover the case of a collision on the left or right of the screen, and also the normal case where the ball simply continues moving.</p
+  ><table class="sourceCode"
+  ><tr
+    ><td class="lineNumbers" title="Click to toggle line numbers" onclick="with (this.firstChild.style) { display = (display == '') ? 'none' : '' }"
+      ><pre
+	>1
+2
+3
+4
+5
+</pre
+	></td
+      ><td class="sourceCode"
+      ><pre class="sourceCode haskell"
+	><code
+	  ><span class="Normal NormalText"
+	    >tick (Ball x y dx dy) | collides_x = Ball (x-dx) (y+dy) (-dx)  dy </span
+	    ><br
+	     /><span class="Normal NormalText"
+	    >                      | collides_y = Ball (x+dx) (y-dy)   dx (-dy) </span
+	    ><br
+	     /><span class="Normal NormalText"
+	    >                      | </span
+	    ><span class="Function"
+	    >otherwise</span
+	    ><span class="Normal NormalText"
+	    >  = Ball (x+dx) (y+dy)   dx   dy</span
+	    ><br
+	     /><span class="Normal NormalText"
+	    >    </span
+	    ><span class="Keyword"
+	    >where</span
+	    ><span class="Normal NormalText"
+	    > collides_y = y &gt; screenHeight || y &lt; </span
+	    ><span class="DecVal Decimal"
+	    >0</span
+	    ><br
+	     /><span class="Normal NormalText"
+	    >          collides_x = x &gt; screenWidth  || x &lt; </span
+	    ><span class="DecVal Decimal"
+	    >0</span
+	    ><br
+	     /></code
+	  ></pre
+	></td
+      ></tr
+    ></table
+  ><p
+  >Finally, we need to write the draw action.</p
+  ><table class="sourceCode"
+  ><tr
+    ><td class="lineNumbers" title="Click to toggle line numbers" onclick="with (this.firstChild.style) { display = (display == '') ? 'none' : '' }"
+      ><pre
+	>1
+2
+3
+4
+5
+6
+</pre
+	></td
+      ><td class="sourceCode"
+      ><pre class="sourceCode haskell"
+	><code
+	  ><span class="Normal NormalText"
+	    >draw (Ball x y _ _) = </span
+	    ><span class="Keyword"
+	    >do</span
+	    ><span class="Normal NormalText"
+	    > scr &lt;- screen</span
+	    ><br
+	     /><span class="Normal NormalText"
+	    >                         clear scr</span
+	    ><span class="Comment"
+	    >-- clear the screen of the old ball</span
+	    ><br
+	     /><span class="Normal NormalText"
+	    >                         circle scr (x,y) radius white $ defaults</span
+	    ><br
+	     /><span class="Normal NormalText"
+	    >                         update </span
+	    ><span class="Comment"
+	    >-- update changes on the hardware screen</span
+	    ><br
+	     /><span class="Normal NormalText"
+	    >         </span
+	    ><span class="Keyword"
+	    >where</span
+	    ><span class="Normal NormalText"
+	    > white  = Color </span
+	    ><span class="DecVal Decimal"
+	    >255</span
+	    ><span class="Normal NormalText"
+	    > </span
+	    ><span class="DecVal Decimal"
+	    >255</span
+	    ><span class="Normal NormalText"
+	    > </span
+	    ><span class="DecVal Decimal"
+	    >255</span
+	    ><span class="Normal NormalText"
+	    > </span
+	    ><span class="DecVal Decimal"
+	    >255</span
+	    ><br
+	     /><span class="Normal NormalText"
+	    >               radius = </span
+	    ><span class="DecVal Decimal"
+	    >10</span
+	    ><br
+	     /></code
+	  ></pre
+	></td
+      ></tr
+    ></table
+  ><p
+  >Now, there's alot of new API here. Firstly, the <code>screen </code> action returns a handle to the Tea Screen type, that is drawn to by all of Tea's drawing functions. The <code>circle </code> action, as you might expect, draws a circle to a buffer. The final argument of <code>circle</code>, <code>defaults</code>, specifies a variety of perhaps less common drawing options that you may wish to include.</p
+  ><p
+  >By default, this function will draw a hollow circle, but we want a filled one, so we override that particular part of the <code>defaults </code> record.</p
+  ><table class="sourceCode"
+  ><tr
+    ><td class="lineNumbers" title="Click to toggle line numbers" onclick="with (this.firstChild.style) { display = (display == '') ? 'none' : '' }"
+      ><pre
+	>1
+2
+3
+4
+5
+6
+</pre
+	></td
+      ><td class="sourceCode"
+      ><pre class="sourceCode haskell"
+	><code
+	  ><span class="Normal NormalText"
+	    >draw (Ball x y _ _) = </span
+	    ><span class="Keyword"
+	    >do</span
+	    ><span class="Normal NormalText"
+	    > scr &lt;- screen </span
+	    ><span class="Comment"
+	    >-- grab the screen handle</span
+	    ><br
+	     /><span class="Normal NormalText"
+	    >                         clear scr </span
+	    ><span class="Comment"
+	    >-- clear the screen of the old ball</span
+	    ><br
+	     /><span class="Normal NormalText"
+	    >                         circle scr (x,y) radius white $ defaults { filled = </span
+	    ><span class="Keyword DataConstructor"
+	    >True</span
+	    ><span class="Normal NormalText"
+	    > } </span
+	    ><span class="Comment"
+	    >-- draw the new ball</span
+	    ><br
+	     /><span class="Normal NormalText"
+	    >                         update </span
+	    ><span class="Comment"
+	    >-- update changes on the hardware screen</span
+	    ><br
+	     /><span class="Normal NormalText"
+	    >       </span
+	    ><span class="Keyword"
+	    >where</span
+	    ><span class="Normal NormalText"
+	    > white  = Color </span
+	    ><span class="DecVal Decimal"
+	    >255</span
+	    ><span class="Normal NormalText"
+	    > </span
+	    ><span class="DecVal Decimal"
+	    >255</span
+	    ><span class="Normal NormalText"
+	    > </span
+	    ><span class="DecVal Decimal"
+	    >255</span
+	    ><span class="Normal NormalText"
+	    > </span
+	    ><span class="DecVal Decimal"
+	    >255</span
+	    ><br
+	     /><span class="Normal NormalText"
+	    >             radius = </span
+	    ><span class="DecVal Decimal"
+	    >10</span
+	    ><br
+	     /></code
+	  ></pre
+	></td
+      ></tr
+    ></table
+  ><p
+  >Finally, because taking <code>screen </code> and then drawing to it is such a common pattern, there is a <code>circleM </code> version of <code>circle </code> (and a <code>clearM</code> for <code>clear</code>) that takes a Tea action that produces a drawing handle, such as <code>screen</code>, rather than a handle itself. This means we can reduce the amount of drawing code to write.</p
+  ><table class="sourceCode"
+  ><tr
+    ><td class="lineNumbers" title="Click to toggle line numbers" onclick="with (this.firstChild.style) { display = (display == '') ? 'none' : '' }"
+      ><pre
+	>1
+2
+3
+4
+5
+</pre
+	></td
+      ><td class="sourceCode"
+      ><pre class="sourceCode haskell"
+	><code
+	  ><span class="Normal NormalText"
+	    >draw (Ball x y _ _) = </span
+	    ><span class="Keyword"
+	    >do</span
+	    ><span class="Normal NormalText"
+	    > clearM screen </span
+	    ><span class="Comment"
+	    >-- clear the screen of the old ball</span
+	    ><br
+	     /><span class="Normal NormalText"
+	    >                         circleM screen (x,y) radius white $ defaults { filled = </span
+	    ><span class="Keyword DataConstructor"
+	    >True</span
+	    ><span class="Normal NormalText"
+	    > } </span
+	    ><span class="Comment"
+	    >-- draw the new ball</span
+	    ><br
+	     /><span class="Normal NormalText"
+	    >                         update </span
+	    ><span class="Comment"
+	    >-- update changes on the hardware screen</span
+	    ><br
+	     /><span class="Normal NormalText"
+	    >       </span
+	    ><span class="Keyword"
+	    >where</span
+	    ><span class="Normal NormalText"
+	    > white  = Color </span
+	    ><span class="DecVal Decimal"
+	    >255</span
+	    ><span class="Normal NormalText"
+	    > </span
+	    ><span class="DecVal Decimal"
+	    >255</span
+	    ><span class="Normal NormalText"
+	    > </span
+	    ><span class="DecVal Decimal"
+	    >255</span
+	    ><span class="Normal NormalText"
+	    > </span
+	    ><span class="DecVal Decimal"
+	    >255</span
+	    ><br
+	     /><span class="Normal NormalText"
+	    >             radius = </span
+	    ><span class="DecVal Decimal"
+	    >10</span
+	    ><br
+	     /></code
+	  ></pre
+	></td
+      ></tr
+    ></table
+  ><p
+  >And that's the end of the tutorial. You can download source code <a href=""
+    >here</a
+    >. In this tutorial, you learned: how to use Tea's state transformer, how to draw primitives to the screen, how to write a main loop, and some Tea coding conventions.</p
+  ></div
+>
+      </div>
+</div>   
+</body>
+</html>

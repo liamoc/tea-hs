@@ -1,0 +1,127 @@
+---
+title: Tutorial 1 - Simple animation
+---
+
+Simple animation tutorial
+-------------------------
+
+Welcome to TeaHS. In this tutorial we will demonstrate a simple example of Tea - an animation of a bouncing ball.
+
+As with all these tutorials, this program will be available in a tar.gz file at the end of the document.
+
+Firstly, we import Tea, and define a simple main function:
+
+~~~~{.haskell .numberLines}
+import Tea
+main :: IO ()
+main = runTea 640 480 undefined $ do
+         return ()
+~~~~
+
+You may have already noticed, but Tea actions do not reside in IO but in a special Tea monad. The only way to execute Tea actions is to use the runTea function. This copointed type structure means that Tea actions can depend on parts of hardware (such as audio and screen output) being initialized, as this is performed before the action inside runTea is executed.
+
+runTea's type signature is as follows:
+
+~~~~{.haskell .numberLines}
+runTea :: Int -> Int -> s -> Tea s a -> IO a
+~~~~
+
+Those that are familiar with the [State Monad]() would notice its similarity to runState, or similar. This is because the Tea monad doubles as a state monad (hence the type parameter). <code>get</code>, <code>put</code> and <code>modify
+</code> all work as normal. With that in mind, let's define our state for the bouncing ball:
+
+~~~~{.haskell .numberLines}
+data BallState = Ball { x  :: Int
+                      , y  :: Int
+                      , dx :: Int
+                      , dy :: Int
+                      }
+~~~~
+
+Next, let's define the 'main loop' for the animation, by redefining our main function as follows:
+
+~~~~{.haskell .numberLines}
+import Tea
+import Control.Monad.State
+import Control.Monad
+
+screenWidth = 640
+screenHeight = 480
+
+main :: IO ()
+-- we use a fixed point combinator to achieve the loop. 
+-- This could be done with explicit recursion also.
+main = runTea screenWidth screenHeight (Ball 320 240 1 1) $ fix $ \loop -> do 
+           modify $ \s -> tick s -- update the ball state
+           get >>= draw          -- draw the ball
+           loop                  -- and around we go again
+~~~~
+
+Now we pass an initial <code>BallState
+</code> to the <code>runTea
+</code> function, changing the type of the monad to <code>Tea BallState ()
+</code>. The final piece of the puzzle is to write the as-yet unwritten <code>tick</code> and <code>draw
+</code> actions.
+
+The <code>tick
+</code> action is responsible for updating the state. The first tick case to handle is the case where the ball bounces against the top or bottom of the screen.
+
+~~~~{.haskell .numberLines}
+tick (Ball x y dx dy) | collides_y = Ball x y dx (-dy) 
+    where collides_y = y > screenHeight || y < 0
+~~~~~
+
+Now we extend this to cover the case of a collision on the left or right of the screen, and also the normal case where the ball simply continues moving.
+
+~~~~~{.haskell .numberLines}
+tick (Ball x y dx dy) | collides_x = Ball (x-dx) (y+dy) (-dx)  dy 
+                      | collides_y = Ball (x+dx) (y-dy)   dx (-dy) 
+                      | otherwise  = Ball (x+dx) (y+dy)   dx   dy
+    where collides_y = y > screenHeight || y < 0
+          collides_x = x > screenWidth  || x < 0
+~~~~~
+
+Finally, we need to write the draw action.
+
+ 
+ 
+ 
+
+~~~~{.haskell .numberLines}
+draw (Ball x y _ _) = do scr <- screen
+                         clear scr-- clear the screen of the old ball
+                         circle scr (x,y) radius white $ defaults
+                         update -- update changes on the hardware screen
+         where white  = Color 255 255 255 255
+               radius = 10
+~~~~
+
+Now, there's alot of new API here. Firstly, the <code>screen
+</code> action returns a handle to the Tea Screen type, that is drawn to by all of Tea's drawing functions. The <code>circle
+</code> action, as you might expect, draws a circle to a buffer. The final argument of <code>circle</code>, <code>defaults</code>, specifies a variety of perhaps less common drawing options that you may wish to include.  
+
+By default, this function will draw a hollow circle, but we want a filled one, so we override that particular part of the <code>defaults
+</code> record.
+
+~~~~{.haskell .numberLines}
+draw (Ball x y _ _) = do scr <- screen -- grab the screen handle
+                         clear scr -- clear the screen of the old ball
+                         circle scr (x,y) radius white $ defaults { filled = True } -- draw the new ball
+                         update -- update changes on the hardware screen
+       where white  = Color 255 255 255 255
+             radius = 10
+~~~~
+
+Finally, because taking <code>screen
+</code> and then drawing to it is such a common pattern, there is a <code>circleM
+</code> version of <code>circle
+</code> (and a <code>clearM</code> for <code>clear</code>) that takes a Tea action that produces a drawing handle, such as <code>screen</code>, rather than a handle itself. This means we can reduce the amount of drawing code to write.
+
+~~~~{.haskell .numberLines}
+draw (Ball x y _ _) = do clearM screen -- clear the screen of the old ball
+                         circleM screen (x,y) radius white $ defaults { filled = True } -- draw the new ball
+                         update -- update changes on the hardware screen
+       where white  = Color 255 255 255 255
+             radius = 10
+~~~~
+
+And that's the end of the tutorial. You can download source code [here](). In this tutorial, you learned: how to use Tea's state transformer, how to draw primitives to the screen, how to write a main loop, and some Tea coding conventions.
