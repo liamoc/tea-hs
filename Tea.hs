@@ -13,18 +13,15 @@ module Tea
    , module Tea.Clipping
    , module Tea.Grabbing
    , module Tea.ImageSaving
-   , module Tea.Tea
    , module Tea.BlendMode
    ) where
 
 --common types
 import Tea.Display
-import Tea.Tea
 import Tea.Color
-import Tea.BlendMode
---specific concerns
-import Tea.Input
-import Tea.Font
+import Tea.BlendMode hiding (blendModeToSPG)
+import Tea.Input     hiding (sdlKey, sdlButton, sdlMod)
+import Tea.Font      hiding (getSFont, Font(Font))
 import Tea.Sound
 import Tea.Event
 -- graphics object mixins
@@ -36,5 +33,5 @@ import Tea.Grabbing
 import Tea.ImageSaving
 import Tea.TextDrawing
 -- mixin inheritors
-import Tea.Bitmap
-import Tea.Screen
+import Tea.Bitmap hiding (buffer)
+import Tea.Screen hiding (screenBuffer)
