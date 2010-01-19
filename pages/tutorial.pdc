@@ -7,7 +7,7 @@ Simple animation tutorial
 
 Welcome to TeaHS. In this tutorial we will demonstrate a simple example of Tea - an animation of a bouncing ball.
 
-As with all these tutorials, this program will be available in a tar.gz file at the end of the document.
+As with all these tutorials, this program will be available in a single file at the end of the document.
 
 Firstly, we import Tea, and define a simple main function:
 
@@ -26,7 +26,7 @@ runTea's type signature is as follows:
 runTea :: Int -> Int -> s -> Tea s a -> IO a
 ~~~~
 
-Those that are familiar with the [State Monad]() would notice its similarity to runState, or similar. This is because the Tea monad doubles as a state monad (hence the type parameter). <code>get</code>, <code>put</code> and <code>modify
+Those that are familiar with the [State Monad](http://www.haskell.org/ghc/docs/6.10-latest/html/libraries/mtl/Control-Monad-State.html) would notice its similarity to runState, or similar. This is because the Tea monad doubles as a state monad (hence the type parameter). <code>get</code>, <code>put</code> and <code>modify
 </code> all work as normal. With that in mind, let's define our state for the bouncing ball:
 
 ~~~~{.haskell .numberLines}
@@ -66,6 +66,7 @@ The <code>tick
 </code> action is responsible for updating the state. The first tick case to handle is the case where the ball bounces against the top or bottom of the screen.
 
 ~~~~{.haskell .numberLines}
+tick :: BallState -> BallState
 tick (Ball x y dx dy) | collides_y = Ball x y dx (-dy) 
     where collides_y = y > screenHeight || y < 0
 ~~~~~
@@ -73,6 +74,7 @@ tick (Ball x y dx dy) | collides_y = Ball x y dx (-dy)
 Now we extend this to cover the case of a collision on the left or right of the screen, and also the normal case where the ball simply continues moving.
 
 ~~~~~{.haskell .numberLines}
+tick :: BallState -> BallState
 tick (Ball x y dx dy) | collides_x = Ball (x-dx) (y+dy) (-dx)  dy 
                       | collides_y = Ball (x+dx) (y-dy)   dx (-dy) 
                       | otherwise  = Ball (x+dx) (y+dy)   dx   dy
@@ -82,11 +84,8 @@ tick (Ball x y dx dy) | collides_x = Ball (x-dx) (y+dy) (-dx)  dy
 
 Finally, we need to write the draw action.
 
- 
- 
- 
-
 ~~~~{.haskell .numberLines}
+draw :: BallState -> Tea BallState ()
 draw (Ball x y _ _) = do scr <- screen
                          clear scr-- clear the screen of the old ball
                          circle scr (x,y) radius white $ defaults
@@ -103,6 +102,7 @@ By default, this function will draw a hollow circle, but we want a filled one, s
 </code> record.
 
 ~~~~{.haskell .numberLines}
+draw :: BallState -> Tea BallState ()
 draw (Ball x y _ _) = do scr <- screen -- grab the screen handle
                          clear scr -- clear the screen of the old ball
                          circle scr (x,y) radius white $ defaults { filled = True } -- draw the new ball
@@ -117,6 +117,7 @@ Finally, because taking <code>screen
 </code> (and a <code>clearM</code> for <code>clear</code>) that takes a Tea action that produces a drawing handle, such as <code>screen</code>, rather than a handle itself. This means we can reduce the amount of drawing code to write.
 
 ~~~~{.haskell .numberLines}
+draw :: BallState -> Tea BallState ()
 draw (Ball x y _ _) = do clearM screen -- clear the screen of the old ball
                          circleM screen (x,y) radius white $ defaults { filled = True } -- draw the new ball
                          update -- update changes on the hardware screen
@@ -124,4 +125,4 @@ draw (Ball x y _ _) = do clearM screen -- clear the screen of the old ball
              radius = 10
 ~~~~
 
-And that's the end of the tutorial. You can download source code [here](). In this tutorial, you learned: how to use Tea's state transformer, how to draw primitives to the screen, how to write a main loop, and some Tea coding conventions.
+And that's the end of the tutorial. You can download source code [here]($root/static/tutorial1.hs). In this tutorial, you learned: how to use Tea's state transformer, how to draw primitives to the screen, how to write a main loop, and some Tea coding conventions.

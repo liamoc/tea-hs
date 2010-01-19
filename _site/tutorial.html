@@ -28,7 +28,7 @@
   ><p
   >Welcome to TeaHS. In this tutorial we will demonstrate a simple example of Tea - an animation of a bouncing ball.</p
   ><p
-  >As with all these tutorials, this program will be available in a tar.gz file at the end of the document.</p
+  >As with all these tutorials, this program will be available in a single file at the end of the document.</p
   ><p
   >Firstly, we import Tea, and define a simple main function:</p
   ><table class="sourceCode"
@@ -124,7 +124,7 @@
       ></tr
     ></table
   ><p
-  >Those that are familiar with the <a href=""
+  >Those that are familiar with the <a href="http://www.haskell.org/ghc/docs/6.10-latest/html/libraries/mtl/Control-Monad-State.html"
     >State Monad</a
     > would notice its similarity to runState, or similar. This is because the Tea monad doubles as a state monad (hence the type parameter). <code>get</code>, <code>put</code> and <code>modify </code> all work as normal. With that in mind, let's define our state for the bouncing ball:</p
   ><table class="sourceCode"
@@ -311,12 +311,18 @@
       ><pre
 	>1
 2
+3
 </pre
 	></td
       ><td class="sourceCode"
       ><pre class="sourceCode haskell"
 	><code
-	  ><span class="Normal NormalText"
+	  ><span class="Function FunctionDefinition"
+	    >tick ::</span
+	    ><span class="Normal NormalText"
+	    > BallState -&gt; BallState</span
+	    ><br
+	     /><span class="Normal NormalText"
 	    >tick (Ball x y dx dy) | collides_y = Ball x y dx (-dy) </span
 	    ><br
 	     /><span class="Normal NormalText"
@@ -344,12 +350,18 @@
 3
 4
 5
+6
 </pre
 	></td
       ><td class="sourceCode"
       ><pre class="sourceCode haskell"
 	><code
-	  ><span class="Normal NormalText"
+	  ><span class="Function FunctionDefinition"
+	    >tick ::</span
+	    ><span class="Normal NormalText"
+	    > BallState -&gt; BallState</span
+	    ><br
+	     /><span class="Normal NormalText"
 	    >tick (Ball x y dx dy) | collides_x = Ball (x-dx) (y+dy) (-dx)  dy </span
 	    ><br
 	     /><span class="Normal NormalText"
@@ -393,12 +405,18 @@
 4
 5
 6
+7
 </pre
 	></td
       ><td class="sourceCode"
       ><pre class="sourceCode haskell"
 	><code
-	  ><span class="Normal NormalText"
+	  ><span class="Function FunctionDefinition"
+	    >draw ::</span
+	    ><span class="Normal NormalText"
+	    > BallState -&gt; Tea BallState ()</span
+	    ><br
+	     /><span class="Normal NormalText"
 	    >draw (Ball x y _ _) = </span
 	    ><span class="Keyword"
 	    >do</span
@@ -463,12 +481,18 @@
 4
 5
 6
+7
 </pre
 	></td
       ><td class="sourceCode"
       ><pre class="sourceCode haskell"
 	><code
-	  ><span class="Normal NormalText"
+	  ><span class="Function FunctionDefinition"
+	    >draw ::</span
+	    ><span class="Normal NormalText"
+	    > BallState -&gt; Tea BallState ()</span
+	    ><br
+	     /><span class="Normal NormalText"
 	    >draw (Ball x y _ _) = </span
 	    ><span class="Keyword"
 	    >do</span
@@ -538,12 +562,18 @@
 3
 4
 5
+6
 </pre
 	></td
       ><td class="sourceCode"
       ><pre class="sourceCode haskell"
 	><code
-	  ><span class="Normal NormalText"
+	  ><span class="Function FunctionDefinition"
+	    >draw ::</span
+	    ><span class="Normal NormalText"
+	    > BallState -&gt; Tea BallState ()</span
+	    ><br
+	     /><span class="Normal NormalText"
 	    >draw (Ball x y _ _) = </span
 	    ><span class="Keyword"
 	    >do</span
@@ -598,7 +628,7 @@
       ></tr
     ></table
   ><p
-  >And that's the end of the tutorial. You can download source code <a href=""
+  >And that's the end of the tutorial. You can download source code <a href="./static/tutorial1.hs"
     >here</a
     >. In this tutorial, you learned: how to use Tea's state transformer, how to draw primitives to the screen, how to write a main loop, and some Tea coding conventions.</p
   ></div
