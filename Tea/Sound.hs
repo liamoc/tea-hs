@@ -1,29 +1,28 @@
-module Tea.Sound 
-   ( loadSound
-   , maxVolume
-   , play
-   , playLoop
-   , pause
-   , resume
-   , stop
-   , setVolume
-   , getVolume
-   , isPlaying
-   , isPaused
-   , pauseAll
-   , resumeAll
-   , stopAll
-   , setMasterVolume
-   , getMasterVolume
-   , Sound
-   ) where
+module Tea.Sound ( loadSound
+                 , maxVolume
+                 , play
+                 , playLoop
+                 , pause
+                 , resume
+                 , stop
+                 , setVolume
+                 , getVolume
+                 , isPlaying
+                 , isPaused
+                 , pauseAll
+                 , resumeAll
+                 , stopAll
+                 , setMasterVolume
+                 , getMasterVolume
+                 , Sound
+                 ) where
 
+import Prelude hiding (lookup)
 import qualified Graphics.UI.SDL.Mixer as Mixer
-import Control.Monad.Trans
 import Control.Monad.State
-import Tea.Types
-import Tea.Monad
-import Data.Map as Map
+import Data.Map(insert, lookup)
+import Tea.TeaState
+import Tea.Tea
 
 data Sound = Sound Mixer.Chunk 
 
@@ -47,7 +46,7 @@ withChannel = withChannelRet ()
 
 withChannelRet ret chun f = let key = (read $ show chun) :: Int 
                             in do c <- fmap _channels getT 
-                                  case Map.lookup key c of
+                                  case lookup key c of
                                      Just channel -> f channel
                                      Nothing      -> return ret
 

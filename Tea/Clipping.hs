@@ -1,12 +1,13 @@
-module Tea.Clipping ( Clipping (..)
+module Tea.Clipping ( Clipping (clip)
                     , clipM
                     ) where
 
-import Graphics.UI.SDL
-import Tea.Monad
-import Tea.Types
 import Control.Monad.State
 import Control.Monad.Trans
+import Graphics.UI.SDL (withClipRect, Surface, Rect (..))
+import Tea.Tea
+import Tea.Screen
+import Tea.Bitmap
 
 withTea m s st = runStateT (runStateT (extractTea m) s) st
 
@@ -19,6 +20,12 @@ class Clipping v where
                             putT st'
                             put s'
                             return v
-   clipping_buffer :: v -> Surface   
+   clipping_buffer :: v -> Surface
 
 clipM v a b c d  = v >>= \v' -> clip v' a b c d
+
+instance Clipping Screen where
+   clipping_buffer = screenBuffer
+
+instance Clipping Bitmap where
+   clipping_buffer = buffer

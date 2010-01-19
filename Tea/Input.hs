@@ -1,113 +1,18 @@
-{-# LANGUAGE MultiParamTypeClasses #-}
-module Tea.Types 
-   ( Bitmap (..)
-   , Color (..)
-   , BlendMode (..)
-   , Screen (..)
-   , blendModeToSPG
-   , KeyCode(..)
-   , Mod (..)
-   , Button (..)
-   , Event (..)
-   , TeaState (..)
-   , EventState (..)
-   , sdlMod
-   , sdlButton
-   , sdlKey
-   , EventQuery (..)    
-   , Tea (..)
-   , getT
-   , putT
-   , modifyT
-   ) where
+module Tea.Input ( Button (..)
+                 , KeyCode (..)
+                 , Mod (..)
+                 , ScrollDirection (..)
+                 , sdlMod
+                 , sdlButton
+                 , sdlKey
+                 ) where
 
-import qualified Graphics.UI.SDL as SDL hiding (Event)
-import qualified Graphics.UI.SDL.Sprig as SPG
-import Control.Monad.State
-import Control.Monad.Trans
-import Data.Array as A
-import qualified Data.Map as M
-
-
-data Bitmap = Bitmap { buffer :: SDL.Surface }
-data Screen = Screen { screenBuffer :: SDL.Surface }
-
-data TeaState = TS { _screen :: Screen, _eventState :: EventState, _fpsCap :: Int, _lastUpdate :: Int, _channels :: M.Map Int Int}
-newtype Tea s v = Tea { extractTea :: StateT s (StateT TeaState IO) v }
-
-instance Monad (Tea s) where
-   return f         = Tea $ return f
-   (Tea a) >>= b = Tea $ a >>= extractTea . b
-
-getT :: Tea s TeaState
-getT = Tea $ lift $ get
-putT = Tea . lift . put
-modifyT = Tea . lift . modify
-
-data Color = Color { red :: Int, green :: Int, blue :: Int, alpha :: Int}
-           deriving (Show, Eq)
-
- 
-data EventState = ES { keyCodes    :: A.Array KeyCode Bool
-                     , keysDown    :: Int
-                     }
-
-data BlendMode = DestAlpha 
-               | SrcAlpha 
-               | CombineAlpha 
-               | CopyNoAlpha 
-               | CopySrcAlpha 
-               | CopyDestAlpha 
-               | CopyCombineAlpha 
-               | CopyAlphaOnly 
-               | CombineAlphaOnly 
-               deriving (Show,Eq)
-
-
-blendModeToSPG  DestAlpha         = SPG.DestAlpha 
-blendModeToSPG  SrcAlpha          = SPG.SrcAlpha 
-blendModeToSPG  CombineAlpha      = SPG.CombineAlpha    
-blendModeToSPG  CopyNoAlpha       = SPG.CopyNoAlpha 
-blendModeToSPG  CopySrcAlpha      = SPG.CopySrcAlpha 
-blendModeToSPG  CopyDestAlpha     = SPG.CopyDestAlpha 
-blendModeToSPG  CopyCombineAlpha  = SPG.CopyCombineAlpha 
-blendModeToSPG  CopyAlphaOnly     = SPG.CopyAlphaOnly 
-blendModeToSPG  CombineAlphaOnly  = SPG.CombineAlphaOnly 
+import Data.Array (Ix (..))
+import qualified Graphics.UI.SDL as SDL
 
 data ScrollDirection = Up | Down deriving (Show, Eq)
-
-data Event s = Event { keyDown        :: KeyCode -> [Mod] -> Tea s ()
-                     , keyUp          :: KeyCode -> [Mod] -> Tea s ()
-                     , mouseDown      :: Button -> (Int, Int) -> Tea s ()
-                     , mouseUp        :: Button -> (Int, Int) -> Tea s ()
-                     , mouseMove      :: (Int, Int) -> [Button] -> Tea s ()
-                     , mouseGained    :: Tea s ()
-                     , mouseLost      :: Tea s ()
-                     , keyboardGained :: Tea s ()
-                     , keyboardLost   :: Tea s ()
-                     , exit           :: Tea s ()
-                     , minimized      :: Tea s ()
-                     , restored       :: Tea s ()
-                     }                      
-
-
-data EventQuery = KeyDown KeyCode
-                | KeyUp   KeyCode
-                | ModOn   Mod
-                | ModOff  Mod 
-                | MouseIn (Int, Int) (Int, Int)
-                | MouseOutside (Int, Int) (Int, Int)
-                | AnyKeyDown
-                | NoKeyDown
-                | MouseDown Button
-                | MouseUp Button
-                | AnyMouseDown
-                | NoMouseDown
-                | AppVisible 
-                | AppInvisible deriving (Show, Eq)
-
 data Button = ButtonLeft | ButtonRight | ButtonMiddle | ButtonScrollUp | ButtonScrollDown deriving (Show, Eq, Ord, Enum, Bounded)
- 
+
 data KeyCode = KeyUnknown     | KeyFirst     | KeyBackspace    | KeyTab       | KeyClear      | KeyReturn      | KeyPause    | KeyEscape
              | KeySpace       | KeyExclaim   | KeyDoubleQuote  | KeyHash      | KeyDollar     | KeyAmpersand   | KeyQuote    | KeyLeftParen
              | KeyRightParen  | KeyAsterisk  | KeyPlus         | KeyComma     | KeyMinus      | KeyPeriod      | KeySlash    | KeyNum0
@@ -127,7 +32,7 @@ data KeyCode = KeyUnknown     | KeyFirst     | KeyBackspace    | KeyTab       | 
              | KeyCompose     | KeyHelp      | KeyPrint        | KeySysReq    | KeyBreak      | KeyMenu        | KeyPower    | KeyEuro
              | KeyUndo        | KeyLast
              deriving (Show, Eq, Ord, Enum, Bounded)
-              
+
 data Mod = ModLeftShift
          | ModRightShift
          | ModLeftCtrl
@@ -149,24 +54,24 @@ inRange' (a,b) c = inRange (fromEnum a, fromEnum b) (fromEnum c)
 index' (a,b) c   = (fromEnum c) - (fromEnum a)
 
 instance Ix KeyCode where
-   range   = range' 
+   range   = range'
    inRange = inRange'
    index   = index'
 
 instance Ix Mod where
-   range   = range' 
+   range   = range'
    inRange = inRange'
    index   = index'
 
 instance Ix Button where
-   range   = range' 
+   range   = range'
    inRange = inRange'
    index   = index'
 
-sdlButton SDL.ButtonLeft      = ButtonLeft      
-sdlButton SDL.ButtonRight     = ButtonRight     
-sdlButton SDL.ButtonMiddle    = ButtonMiddle    
-sdlButton SDL.ButtonWheelUp   = ButtonScrollUp  
+sdlButton SDL.ButtonLeft      = ButtonLeft
+sdlButton SDL.ButtonRight     = ButtonRight
+sdlButton SDL.ButtonMiddle    = ButtonMiddle
+sdlButton SDL.ButtonWheelUp   = ButtonScrollUp
 sdlButton SDL.ButtonWheelDown = ButtonScrollDown
 
 sdlMod SDL.KeyModLeftShift  = ModLeftShift
@@ -184,22 +89,22 @@ sdlMod SDL.KeyModCtrl       = ModCtrl
 sdlMod SDL.KeyModShift      = ModShift
 sdlMod SDL.KeyModAlt        = ModAlt
 sdlMod SDL.KeyModMeta       = ModMeta
- 
-modSDL ModLeftShift  = SDL.KeyModLeftShift  
-modSDL ModRightShift = SDL.KeyModRightShift 
-modSDL ModLeftCtrl   = SDL.KeyModLeftCtrl   
-modSDL ModRightCtrl  = SDL.KeyModRightCtrl  
-modSDL ModLeftAlt    = SDL.KeyModLeftAlt    
-modSDL ModRightAlt   = SDL.KeyModRightAlt   
-modSDL ModLeftMeta   = SDL.KeyModLeftMeta   
-modSDL ModRightMeta  = SDL.KeyModRightMeta  
-modSDL ModNumLock    = SDL.KeyModNum        
-modSDL ModCapsLock   = SDL.KeyModCaps       
-modSDL ModAltGr      = SDL.KeyModMode       
-modSDL ModCtrl       = SDL.KeyModCtrl       
-modSDL ModShift      = SDL.KeyModShift      
-modSDL ModAlt        = SDL.KeyModAlt        
-modSDL ModMeta       = SDL.KeyModMeta       
+
+modSDL ModLeftShift  = SDL.KeyModLeftShift
+modSDL ModRightShift = SDL.KeyModRightShift
+modSDL ModLeftCtrl   = SDL.KeyModLeftCtrl
+modSDL ModRightCtrl  = SDL.KeyModRightCtrl
+modSDL ModLeftAlt    = SDL.KeyModLeftAlt
+modSDL ModRightAlt   = SDL.KeyModRightAlt
+modSDL ModLeftMeta   = SDL.KeyModLeftMeta
+modSDL ModRightMeta  = SDL.KeyModRightMeta
+modSDL ModNumLock    = SDL.KeyModNum
+modSDL ModCapsLock   = SDL.KeyModCaps
+modSDL ModAltGr      = SDL.KeyModMode
+modSDL ModCtrl       = SDL.KeyModCtrl
+modSDL ModShift      = SDL.KeyModShift
+modSDL ModAlt        = SDL.KeyModAlt
+modSDL ModMeta       = SDL.KeyModMeta
 
 sdlKey SDL.SDLK_UNKNOWN      = KeyUnknown
 sdlKey SDL.SDLK_FIRST        = KeyFirst
@@ -340,5 +245,3 @@ sdlKey SDL.SDLK_EURO         = KeyEuro
 sdlKey SDL.SDLK_UNDO         = KeyUndo
 sdlKey SDL.SDLK_LAST         = KeyLast
 sdlKey _                 = KeyUnknown
-
-

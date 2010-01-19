@@ -1,28 +1,39 @@
-{-# LANGUAGE NoMonomorphismRestriction #-}
-module Tea.Primitive
-   ( PrimitiveOptions (..)
-   , defaults
-   , Primitive (..)
-   , rectM
-   , setPixelM
-   , getPixelM
-   , clearM
-   , roundedRectM
-   , lineM
-   , fadeLineM
-   , bezierM
-   , circleM
-   , arcM
-   , ellipseM
-   ) where
+{-# LANGUAGE NoMonomorphismRestriction #-} -- I don't generally do this, but it really makes life easier if I do in this case
+module Tea.Primitive ( PrimitiveOptions (..)
+                     , defaults
+                     , Primitive ( rect
+                                 , setPixel
+                                 , getPixel
+                                 , clear
+                                 , roundedRect
+                                 , line
+                                 , fadeLine
+                                 , bezier
+                                 , circle
+                                 , arc
+                                 , ellipse
+                                 )
+                     , rectM
+                     , setPixelM
+                     , getPixelM
+                     , clearM
+                     , roundedRectM
+                     , lineM
+                     , fadeLineM
+                     , bezierM
+                     , circleM
+                     , arcM
+                     , ellipseM
+                     ) where
 
-import qualified Graphics.UI.SDL  as SDL hiding(Color)
+import qualified Graphics.UI.SDL as SDL
 import qualified Graphics.UI.SDL.Sprig as SPG
-import Tea.Monad
-import Tea.Types
-import Foreign.Storable
-import Foreign
 import Control.Monad.Trans
+import Tea.Tea
+import Tea.BlendMode
+import Tea.Bitmap
+import Tea.Screen
+import Tea.Color
 
 data PrimitiveOptions = PrimitiveOptions { mix :: BlendMode
                                          , antialias :: Bool
@@ -120,3 +131,9 @@ bezierM m c1 c2 c3 c4 q l o = m >>= \m' -> bezier m'  c1 c2 c3 c4 q l o
 circleM m c r l o = m >>= \m' -> circle m'  c r l o
 arcM m c r s e l o = m >>= \m' -> arc m'  c r s e l o
 ellipseM m c rx ry l o = m >>= \m' -> ellipse m'  c rx ry l o
+
+instance Primitive Bitmap where
+   primitive_buffer = buffer
+
+instance Primitive Screen where
+   primitive_buffer = screenBuffer

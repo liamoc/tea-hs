@@ -1,8 +1,11 @@
-module Tea.Size ( Size (..)
+module Tea.Size ( Size (width,height)
                 , heightM
                 , widthM 
                 ) where
-import Graphics.UI.SDL
+
+import Graphics.UI.SDL(Surface, surfaceGetHeight, surfaceGetWidth)
+import Tea.Screen
+import Tea.Bitmap
 
 class Size v where
    width  :: v -> Int
@@ -13,3 +16,9 @@ class Size v where
 
 widthM m = m >>= return . width
 heightM m = m >>= return . height
+
+instance Size Screen where
+   size_buffer = screenBuffer
+
+instance Size Bitmap where
+   size_buffer = buffer
