@@ -1,5 +1,6 @@
 module Tea
-   ( module Tea.Display
+   ( module Tea.Tea
+   , module Tea.Display
    , module Tea.Input
    , module Tea.Sound
    , module Tea.Bitmap
@@ -17,6 +18,7 @@ module Tea
    ) where
 
 --common types
+import Tea.Tea (Tea)
 import Tea.Display
 import Tea.Color
 import Tea.BlendMode hiding (blendModeToSPG)
