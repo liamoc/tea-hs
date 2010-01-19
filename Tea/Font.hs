@@ -30,10 +30,10 @@ wordsRespectingSpaces :: String -> [String]
 wordsRespectingSpaces [] = []
 wordsRespectingSpaces str = let (f,s) = partitionAtWord str 1 in f:wordsRespectingSpaces s
 
-wrap (Font font) str w = init $ unlines $ map (\v -> unlines $ reverse $ wrap' v []) $ lines $ str
+wrap (Font font) str w = init $ unlines $ map (\v -> unlines $ reverse $ wrap' v []) $ lines str
   where
     wrap' [] accum = accum
-    wrap' str accum = let possibilities = inits $ wordsRespectingSpaces $ str
+    wrap' str accum = let possibilities = inits $ wordsRespectingSpaces str
                           sizemap =  zip (map (textWidth font . concat) possibilities) (map length possibilities)
                           amountToTake = case snd $ last $ takeWhile ((< w) . fst) sizemap of
                                            0 -> 1

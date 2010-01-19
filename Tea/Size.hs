@@ -1,6 +1,6 @@
 module Tea.Size ( Size (width,height)
                 , heightM
-                , widthM 
+                , widthM
                 ) where
 
 import Graphics.UI.SDL(Surface, surfaceGetHeight, surfaceGetWidth)
@@ -14,8 +14,8 @@ class Size v where
    height = surfaceGetHeight . size_buffer
    size_buffer :: v -> Surface
 
-widthM m = m >>= return . width
-heightM m = m >>= return . height
+widthM  = fmap width
+heightM = fmap height
 
 instance Size Screen where
    size_buffer = screenBuffer

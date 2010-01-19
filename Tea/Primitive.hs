@@ -84,15 +84,15 @@ class Primitive v where
              SDL.fillRect surf (Just (SDL.Rect 0 0
                                           (SDL.surfaceGetWidth  surf)
                                           (SDL.surfaceGetHeight surf)))
-             where surf = (primitive_buffer x)
+             where surf = primitive_buffer x
 
    getPixel :: v -> (Int, Int) -> Tea s Color
-   getPixel s (x, y) = liftIO $ SPG.getPixel (primitive_buffer s) x y >>= pixelToColor (primitive_buffer s)
+   getPixel s (x, y) = liftIO $ SPG.getPixel (primitive_buffer s) x y >>= pixelToColor $ primitive_buffer s
 
 
    setPixel :: v -> (Int, Int) -> Color -> Tea s ()
-   setPixel s (x, y) color = liftIO $ SPG.pixel surf x y =<< (colorToPixel surf color)
-                        where surf = (primitive_buffer s)
+   setPixel s (x, y) color = liftIO $ SPG.pixel surf x y =<< colorToPixel surf color
+                        where surf = primitive_buffer s
 
    rect :: v -> (Int, Int) -> Int -> Int -> Color -> PrimitiveOptions -> Tea s ()
    rect s (x,y) w h c opts = liftIO $ withOptions opts $ rect' (primitive_buffer s) x y (x+w) (y+h) c
@@ -123,7 +123,7 @@ clearM = (>>= clear)
 -- s/\(.*\)M m\(.*\)/\0 = m >>= \\m' -> \1 m' \2/g
 rectM m c w h l o = m >>= \m' -> rect m'  c w h l o
 setPixelM m c l = m >>= \m' -> setPixel m'  c l
-getPixelM m c = m >>= \m' -> getPixel m'  c
+getPixelM m c = m >>= flip getPixel c
 roundedRectM m c w h r l o = m >>= \m' -> roundedRect m'  c w h r l o
 lineM m c1 c2 l o = m >>= \m' -> line m'  c1 c2 l o
 fadeLineM m c1 c2 l1 l2 o = m >>= \m' -> fadeLine m'  c1 c2 l1 l2 o

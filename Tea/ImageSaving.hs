@@ -10,10 +10,10 @@ import Tea.Bitmap
 
 class ImageSaving v where
    save :: v -> String -> Tea s Bool
-   save z path = liftIO $ saveBMP (image_saving_buffer z) path
+   save = liftIO . saveBMP . image_saving_buffer
    image_saving_buffer :: v -> Surface
 
-saveM m s = m >>= \m' -> save m' s
+saveM m s = m >>= flip save s
 
 instance ImageSaving Screen where
    image_saving_buffer = screenBuffer

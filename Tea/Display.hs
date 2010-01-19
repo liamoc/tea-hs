@@ -26,7 +26,7 @@ setFrameRate n = modifyT $ \ts -> ts { _fpsCap = 1000 `div` n }
 
 update :: Tea s ()
 update = do ts@(TS { _screen = (Screen x), _fpsCap = fps, _lastUpdate = last}) <- getT
-            t <- liftIO $ SDL.getTicks
+            t <- liftIO SDL.getTicks
             liftIO $ do
                      when (fromIntegral t < last + fps) $ SDL.delay $ fromIntegral $ last + fps - fromIntegral t
                      SDL.tryFlip x

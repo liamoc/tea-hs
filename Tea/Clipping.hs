@@ -9,7 +9,7 @@ import Tea.Tea
 import Tea.Screen
 import Tea.Bitmap
 
-withTea m s st = runStateT (runStateT (extractTea m) s) st
+withTea m  = runStateT . runStateT $ extractTea m
 
 class Clipping v where
    clip :: v -> (Int, Int) -> Int -> Int -> Tea s z -> Tea s z

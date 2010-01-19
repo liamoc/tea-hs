@@ -50,8 +50,8 @@ data Mod = ModLeftShift
          | ModMeta deriving (Show, Eq, Ord, Enum, Bounded)
 
 range' (a,b)     = map toEnum $ range (fromEnum a,fromEnum b)
-inRange' (a,b) c = inRange (fromEnum a, fromEnum b) (fromEnum c)
-index' (a,b) c   = (fromEnum c) - (fromEnum a)
+inRange' (a,b)   = inRange (fromEnum a, fromEnum b) . fromEnum
+index' (a,b) c   = fromEnum c - fromEnum a
 
 instance Ix KeyCode where
    range   = range'

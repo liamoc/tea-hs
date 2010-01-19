@@ -15,6 +15,7 @@ import Data.Array ((//),(!))
 import Control.Applicative ((<$>))
 import Control.Monad.State
 import Control.Monad.Trans
+import Control.Monad(when)
 import Data.Monoid
 import Tea.Input
 import Tea.Tea
@@ -52,11 +53,11 @@ data Event s = Event { keyDown        :: KeyCode -> [Mod] -> Tea s ()
 
 instance Monoid (Event s) where
   mappend (Event a1 a2 a3 a4 a5 a7 a8 a9 a10 a11 a12 a13) (Event b1 b2 b3 b4 b5 b7 b8 b9 b10 b11 b12 b13) = Event {
-    keyDown        = \key mods -> (a1 key mods) >> (b1 key mods),
-    keyUp          = \key mods -> (a2 key mods) >> (b2 key mods),
-    mouseDown      = \c b    -> (a3 c b) >> (b3 c b),
-    mouseUp        = \c b    -> (a4 c b) >> (b4 c b),
-    mouseMove      = \c b    -> (a5 c b) >> (b5 c b),
+    keyDown        = \key mods -> a1 key mods >> b1 key mods,
+    keyUp          = \key mods -> a2 key mods >> b2 key mods,
+    mouseDown      = \c b    -> a3 c b >> b3 c b,
+    mouseUp        = \c b    -> a4 c b >> b4 c b,
+    mouseMove      = \c b    -> a5 c b >> b5 c b,
     mouseGained    = a7 >> b7,
     mouseLost      = a8 >> b8,
     keyboardGained = a9 >> b9,
@@ -101,7 +102,7 @@ handleEvents e = let e' = eventHandler {
                              keyUp   = \code _-> (setEventQuery (KeyUp   code) >> setEventQuery NoKeyDown)
                           } +> e
                      this = do
-                            event <- liftIO $ SDL.pollEvent
+                            event <- liftIO SDL.pollEvent
                             buttons <- mouseButtons
                             case event of
                                SDL.GotFocus l            -> foldl (>>) (return ()) $ map gotFocus' l
@@ -113,7 +114,7 @@ handleEvents e = let e' = eventHandler {
                                SDL.MouseMotion x y _ _   -> mouseMove e' (fromIntegral x, fromIntegral y) buttons
                                SDL.Quit                  -> exit e'
                                _                         -> return ()
-                            if event /= SDL.NoEvent then this else return ()
+                            when (event /= SDL.NoEvent) this
                      gotFocus' SDL.MouseFocus = mouseGained e'
                      gotFocus' SDL.InputFocus = keyboardGained e'
                      gotFocus' SDL.ApplicationFocus = restored e'
@@ -123,10 +124,10 @@ handleEvents e = let e' = eventHandler {
                  in this
 
 setEventQuery :: EventQuery -> Tea s ()
-setEventQuery (KeyDown code) = keyCodesModify  $ \c -> c // [(code, True) ]
-setEventQuery (KeyUp code)   = keyCodesModify  $ \c -> c // [(code, False)]
+setEventQuery (KeyDown code) = keyCodesModify (// [(code, True) ])
+setEventQuery (KeyUp code)   = keyCodesModify (// [(code, False)])
 setEventQuery AnyKeyDown     = anyKeyModify (+ 1)
-setEventQuery NoKeyDown      = anyKeyModify (\x -> x - 1)
+setEventQuery NoKeyDown      = anyKeyModify (subtract 1)
 setEventQuery _              = undefined
 
 getEventQuery :: EventQuery -> Tea s Bool
@@ -150,17 +151,16 @@ keyCodesModify f  = eventStateModify $ \es@(ES { keyCodes = s }) -> es { keyCode
 anyKeyModify   f  = eventStateModify $ \es@(ES { keysDown = s }) -> es { keysDown = f s }
 
 
-queryKeyCode code  = (! code) <$> keyCodes <$> _eventState <$> getT
-queryKeyDown       = (> 0)    <$> keysDown <$> _eventState <$> getT
-queryMouseDown     = mouseButtons   >>= return . (/= [])
-queryModState code = currentModKeys >>= return . elem code
-queryMouseButton b = mouseButtons   >>= return . elem b
+queryKeyCode code  = (! code)     <$> keyCodes <$> _eventState <$> getT
+queryKeyDown       = (> 0)        <$> keysDown <$> _eventState <$> getT
+queryMouseDown     = (/= [])      <$> mouseButtons
+queryModState code = elem code    <$> currentModKeys
+queryMouseButton b = elem b       <$> mouseButtons
 queryMouseIn c1 c2 = within c1 c2 <$> mouseCoords
-queryAppVisible :: Tea s Bool
-queryAppVisible    = liftIO $ SDL.getAppState >>= return . elem (SDL.ApplicationFocus)
+queryAppVisible    = liftIO $ elem SDL.ApplicationFocus <$> SDL.getAppState
 
 currentModKeys :: Tea s [Mod]
-currentModKeys = liftIO $ SDL.getModState >>= return . map (sdlMod)
+currentModKeys = liftIO $ map sdlMod <$> SDL.getModState
 
 mouseCoords :: Tea s (Int, Int)
 mouseCoords  = liftIO $ SDL.getMouseState >>= \(x, y, _) -> return (x,y)
@@ -171,10 +171,8 @@ mouseButtons = liftIO $ SDL.getMouseState >>= \(_, _, l) -> return $ map sdlButt
 within (x1,y1) (x2,y2) (x, y) = x > x1 && y > y1 && x < x2 && y < y2
 
 (?) :: EventQuery -> Tea s z -> Tea s ()
-q ? m = do a <- getEventQuery q
-           if a
-              then m >> return ()
-              else return ()
+q ? m = getEventQuery q >>= flip when (m >> return ())
+
 
 is :: EventQuery -> Tea s Bool
 is = getEventQuery

@@ -21,9 +21,9 @@ data Bitmap = Bitmap { buffer :: SDL.Surface }
 
 loadBitmap :: String -> Tea s Bitmap
 loadBitmap s = liftIO $ do
-              buf <- load s
+              buf  <- load s
               buf' <- SDL.displayFormatAlpha buf
-              return $ Bitmap { buffer = buf' }
+              return Bitmap { buffer = buf' }
 
 
 blankBitmap :: Int -> Int -> Color -> Tea s Bitmap
