@@ -1,8 +1,8 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
+-- | Internal only. Do Not Eat.
 module Tea.TeaState ( TeaState (..)
                     , EventState (..)
                     ) where
-
 import Data.Map(Map)
 import Data.Array(Array)
 import Tea.Screen(Screen)

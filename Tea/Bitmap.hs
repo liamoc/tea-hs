@@ -1,6 +1,8 @@
-module Tea.Bitmap ( loadBitmap
+-- | Includes the Bitmap abstract type and its constructors.
+module Tea.Bitmap ( Bitmap (..)
+               -- * Bitmap Constructors
+                  , loadBitmap
                   , blankBitmap
-                  , Bitmap (..)
                   ) where
 import qualified Graphics.UI.SDL as SDL
 import Graphics.UI.SDL.Image (load)
@@ -17,16 +19,24 @@ _blank w h (Color r g b a)  = do buf <- SDL.createRGBSurface [SDL.SWSurface] w h
         bmask = 0x0000ff00
         amask = 0x000000ff
 
+-- |A Bitmap is a non-screen surface that can do everything the Screen can, except
+--  cannot be drawn directly to hardware.
 data Bitmap = Bitmap { buffer :: SDL.Surface }
 
+-- |Load a bitmap from an image file. Can be TGA, BMP, PNM, XPM, XCF, PCX, GIF,
+--  JPG, TIF, LBM or PNG.
 loadBitmap :: String -> Tea s Bitmap
 loadBitmap s = liftIO $ do
               buf  <- load s
               buf' <- SDL.displayFormatAlpha buf
               return Bitmap { buffer = buf' }
 
-
-blankBitmap :: Int -> Int -> Color -> Tea s Bitmap
-blankBitmap w h c = do
-              buf <- liftIO $ _blank w h c
-              return (Bitmap buf)
+-- |Create a new bitmap consisting entirely of a single color
+blankBitmap :: Int -- ^ Width
+            -> Int -- ^ Height
+            -> Color -- ^ Color to fill
+            -> Tea s Bitmap
+blankBitmap w h c = liftIO $ do
+              buf <- _blank w h c
+              buf' <- SDL.displayFormatAlpha buf
+              return (Bitmap buf')

@@ -1,7 +1,7 @@
+-- | Includes basic types for mouse buttons and keyboard keys.
 module Tea.Input ( Button (..)
                  , KeyCode (..)
                  , Mod (..)
-                 , ScrollDirection (..)
                  , sdlMod
                  , sdlButton
                  , sdlKey
@@ -10,9 +10,9 @@ module Tea.Input ( Button (..)
 import Data.Array (Ix (..))
 import qualified Graphics.UI.SDL as SDL
 
-data ScrollDirection = Up | Down deriving (Show, Eq)
+-- |Type representing all mouse buttons.
 data Button = ButtonLeft | ButtonRight | ButtonMiddle | ButtonScrollUp | ButtonScrollDown deriving (Show, Eq, Ord, Enum, Bounded)
-
+-- |Type representing all keys
 data KeyCode = KeyUnknown     | KeyFirst     | KeyBackspace    | KeyTab       | KeyClear      | KeyReturn      | KeyPause    | KeyEscape
              | KeySpace       | KeyExclaim   | KeyDoubleQuote  | KeyHash      | KeyDollar     | KeyAmpersand   | KeyQuote    | KeyLeftParen
              | KeyRightParen  | KeyAsterisk  | KeyPlus         | KeyComma     | KeyMinus      | KeyPeriod      | KeySlash    | KeyNum0
@@ -33,6 +33,7 @@ data KeyCode = KeyUnknown     | KeyFirst     | KeyBackspace    | KeyTab       | 
              | KeyUndo        | KeyLast
              deriving (Show, Eq, Ord, Enum, Bounded)
 
+-- |Type representing all keyboard modifiers
 data Mod = ModLeftShift
          | ModRightShift
          | ModLeftCtrl

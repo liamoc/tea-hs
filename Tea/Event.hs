@@ -1,11 +1,14 @@
-module Tea.Event ( (+>)
-                 , eventHandler
-                 , Event (..)
+{-# LANGUAGE NoMonomorphismRestriction #-}
+-- |Includes event handling concerns and mouse, application and keyboard state
+--  query mechanisms.
+module Tea.Event ( Event (..)
                  , EventQuery (..)
+                 , (+>)
+                 , eventHandler
                  , handleEvents
+                 , updateEvents
                  , (?)
                  , is
-                 , updateEvents
                  , mouseCoords
                  , mouseButtons
                  , currentModKeys
@@ -21,34 +24,40 @@ import Tea.Input
 import Tea.Tea
 import Tea.TeaState
 
-data EventQuery = KeyDown KeyCode
-                | KeyUp   KeyCode
-                | ModOn   Mod
-                | ModOff  Mod
-                | MouseIn (Int, Int) (Int, Int)
-                | MouseOutside (Int, Int) (Int, Int)
-                | AnyKeyDown
-                | NoKeyDown
-                | MouseDown Button
-                | MouseUp Button
-                | AnyMouseDown
-                | NoMouseDown
-                | AppVisible
-                | AppInvisible deriving (Show, Eq)
+-- | A data type used for phrasing queries passed to the `?' and `is' functions
+data EventQuery = KeyDown KeyCode -- ^ Is the specified key currently held down?
+                | KeyUp   KeyCode -- ^ Opposite of KeyDown
+                | ModOn   Mod     -- ^ Is the specified modifier key currently enabled?
+                | ModOff  Mod     -- ^ Opposite of ModOn
+                | MouseIn (Int, Int) (Int, Int)      -- ^ Is the mouse between these two coordinates?
+                | MouseOutside (Int, Int) (Int, Int) -- ^ Opposite of MouseIn
+                | AnyKeyDown        -- ^ Is any key currently held down?
+                | NoKeyDown         -- ^ Opposite of AnyKeyDown
+                | MouseDown Button  -- ^ Is the specified mouse button being clicked?
+                | MouseUp Button    -- ^ Opposite of MouseDown
+                | AnyMouseDown      -- ^ Are any mouse buttons currently being clicked?
+                | NoMouseDown       -- ^ Opposite of AnyMouseDown
+                | AppVisible        -- ^ Is the app window currently non-minimized?
+                | AppInvisible      -- ^ Opposite of AppVisible
+                deriving (Show, Eq)
 
-
-data Event s = Event { keyDown        :: KeyCode -> [Mod] -> Tea s ()
-                     , keyUp          :: KeyCode -> [Mod] -> Tea s ()
-                     , mouseDown      :: Button -> (Int, Int) -> Tea s ()
-                     , mouseUp        :: Button -> (Int, Int) -> Tea s ()
-                     , mouseMove      :: (Int, Int) -> [Button] -> Tea s ()
-                     , mouseGained    :: Tea s ()
-                     , mouseLost      :: Tea s ()
-                     , keyboardGained :: Tea s ()
-                     , keyboardLost   :: Tea s ()
-                     , exit           :: Tea s ()
-                     , minimized      :: Tea s ()
-                     , restored       :: Tea s ()
+-- | A monoidal data type that specifies what to do when an event occurs. Use the
+--   default no-op `eventHandler' (or `mempty') constant and override fields rather
+--   than specify this directly.
+--   You can combine the functionality of many Events using `+>' or `mappend', which
+--   will run both handlers in the order they were appended.
+data Event s = Event { keyDown        :: KeyCode -> [Mod] -> Tea s () -- ^ When a key is pressed
+                     , keyUp          :: KeyCode -> [Mod] -> Tea s () -- ^ When a key stops being pressed
+                     , mouseDown      :: Button -> (Int, Int) -> Tea s () -- ^ When a mouse button is pressed
+                     , mouseUp        :: Button -> (Int, Int) -> Tea s () -- ^ When a mouse button stops being pressed
+                     , mouseMove      :: (Int, Int) -> [Button] -> Tea s ()  -- ^ When the mouse moves
+                     , mouseGained    :: Tea s () -- ^ When the application gains mouse focus
+                     , mouseLost      :: Tea s () -- ^ When the application loses mouse focus
+                     , keyboardGained :: Tea s () -- ^ When the application gains keyboard focus
+                     , keyboardLost   :: Tea s () -- ^ When the application loses keyboard focus
+                     , exit           :: Tea s () -- ^ When the application recieves the exit signal
+                     , minimized      :: Tea s () -- ^ When the application is minimized
+                     , restored       :: Tea s () -- ^ When the application ceases being minimized
                      }
 
 instance Monoid (Event s) where
@@ -84,18 +93,22 @@ instance Monoid (Event s) where
 z :: Tea s ()
 z = return ()
 
+-- |Combine two event handlers. Analogous to mappend
 (+>) :: Event s -> Event s -> Event s
 (+>) = mappend
 
+-- |A default, no-op event handler for overriding. Analogous to mzero.
 eventHandler :: Event s
 eventHandler = mempty
 
-
-
-
+-- |Flush the event queue and update mouse and keyboard state queries, but
+--  do not run any event handlers. Add this to your game loop if you use
+--  `?' and `is' but not `handleEvents'.
 updateEvents :: Tea s ()
 updateEvents = handleEvents eventHandler
 
+-- |Flush the event queue, updating mouse and keyboard state queries, and
+--  executing actions defined in the specified event handler.
 handleEvents :: Event s -> Tea s ()
 handleEvents e = let e' = eventHandler {
                              keyDown = \code _-> (setEventQuery (KeyDown code) >> setEventQuery AnyKeyDown),
@@ -123,7 +136,6 @@ handleEvents e = let e' = eventHandler {
                      lostFocus' SDL.ApplicationFocus = minimized e'
                  in this
 
-setEventQuery :: EventQuery -> Tea s ()
 setEventQuery (KeyDown code) = keyCodesModify (// [(code, True) ])
 setEventQuery (KeyUp code)   = keyCodesModify (// [(code, False)])
 setEventQuery AnyKeyDown     = anyKeyModify (+ 1)
@@ -150,7 +162,6 @@ eventStateModify f = modifyT $ \ts@(TS {_eventState = es}) -> ts {_eventState = 
 keyCodesModify f  = eventStateModify $ \es@(ES { keyCodes = s }) -> es { keyCodes = f s }
 anyKeyModify   f  = eventStateModify $ \es@(ES { keysDown = s }) -> es { keysDown = f s }
 
-
 queryKeyCode code  = (! code)     <$> keyCodes <$> _eventState <$> getT
 queryKeyDown       = (> 0)        <$> keysDown <$> _eventState <$> getT
 queryMouseDown     = (/= [])      <$> mouseButtons
@@ -159,20 +170,25 @@ queryMouseButton b = elem b       <$> mouseButtons
 queryMouseIn c1 c2 = within c1 c2 <$> mouseCoords
 queryAppVisible    = liftIO $ elem SDL.ApplicationFocus <$> SDL.getAppState
 
+-- |Get the current modifier keys that are enabled
 currentModKeys :: Tea s [Mod]
 currentModKeys = liftIO $ map sdlMod <$> SDL.getModState
 
+-- |Get the current mouse coordinates
 mouseCoords :: Tea s (Int, Int)
 mouseCoords  = liftIO $ SDL.getMouseState >>= \(x, y, _) -> return (x,y)
 
+-- |Get the currently pressed mouse buttons
 mouseButtons :: Tea s [Button]
 mouseButtons = liftIO $ SDL.getMouseState >>= \(_, _, l) -> return $ map sdlButton l
 
 within (x1,y1) (x2,y2) (x, y) = x > x1 && y > y1 && x < x2 && y < y2
 
-(?) :: EventQuery -> Tea s z -> Tea s ()
+-- | Execute the specified Tea action if the EventQuery specified is true.
+(?) :: EventQuery -> Tea s v -> Tea s ()
 q ? m = getEventQuery q >>= flip when (m >> return ())
 
 
+-- | Produces a boolean value based on the specified EventQuery.
 is :: EventQuery -> Tea s Bool
 is = getEventQuery
